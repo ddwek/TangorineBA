@@ -98,8 +98,10 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
+am__dirstamp = $(am__leading_dot)dirstamp
 am_TangorineBA_OBJECTS = Board.$(OBJEXT) Digraph.$(OBJEXT) \
-	Callback.$(OBJEXT) resources.$(OBJEXT) main.$(OBJEXT)
+	Callback.$(OBJEXT) resources.$(OBJEXT) ../test/Test.$(OBJEXT) \
+	main.$(OBJEXT)
 TangorineBA_OBJECTS = $(am_TangorineBA_OBJECTS)
 TangorineBA_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -117,9 +119,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/Board.Po ./$(DEPDIR)/Callback.Po \
-	./$(DEPDIR)/Digraph.Po ./$(DEPDIR)/main.Po \
-	./$(DEPDIR)/resources.Po
+am__depfiles_remade = ../test/$(DEPDIR)/Test.Po ./$(DEPDIR)/Board.Po \
+	./$(DEPDIR)/Callback.Po ./$(DEPDIR)/Digraph.Po \
+	./$(DEPDIR)/main.Po ./$(DEPDIR)/resources.Po
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -259,11 +261,13 @@ TangorineBA_DATADIR = ${prefix}/share/TangorineBA/
 AM_CXXFLAGS = `pkg-config --cflags gtk+-3.0` -std=c++11 -O2 \
 	-DTangorineBA_DATADIR=\"${TangorineBA_DATADIR}\" \
 	-DTangorineBA=\"${datarootdir}\"
+AUTOMAKE_OPTIONS = subdir-objects
 TangorineBA_SOURCES = \
 		Board.cc \
 		Digraph.cc \
 		Callback.cc \
 		resources.cc \
+		../test/Test.cc \
 		main.cc
 
 all: all-am
@@ -341,6 +345,14 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+../test/$(am__dirstamp):
+	@$(MKDIR_P) ../test
+	@: > ../test/$(am__dirstamp)
+../test/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../test/$(DEPDIR)
+	@: > ../test/$(DEPDIR)/$(am__dirstamp)
+../test/Test.$(OBJEXT): ../test/$(am__dirstamp) \
+	../test/$(DEPDIR)/$(am__dirstamp)
 
 TangorineBA$(EXEEXT): $(TangorineBA_OBJECTS) $(TangorineBA_DEPENDENCIES) $(EXTRA_TangorineBA_DEPENDENCIES) 
 	@rm -f TangorineBA$(EXEEXT)
@@ -348,10 +360,12 @@ TangorineBA$(EXEEXT): $(TangorineBA_OBJECTS) $(TangorineBA_DEPENDENCIES) $(EXTRA
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f ../test/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@../test/$(DEPDIR)/Test.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Board.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Callback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Digraph.Po@am__quote@ # am--include-marker
@@ -365,15 +379,17 @@ $(am__depfiles_remade):
 am--depfiles: $(am__depfiles_remade)
 
 .cc.o:
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ $<
 
 .cc.obj:
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
@@ -495,6 +511,8 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f ../test/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../test/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -504,7 +522,8 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/Board.Po
+		-rm -f ../test/$(DEPDIR)/Test.Po
+	-rm -f ./$(DEPDIR)/Board.Po
 	-rm -f ./$(DEPDIR)/Callback.Po
 	-rm -f ./$(DEPDIR)/Digraph.Po
 	-rm -f ./$(DEPDIR)/main.Po
@@ -554,7 +573,8 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/Board.Po
+		-rm -f ../test/$(DEPDIR)/Test.Po
+	-rm -f ./$(DEPDIR)/Board.Po
 	-rm -f ./$(DEPDIR)/Callback.Po
 	-rm -f ./$(DEPDIR)/Digraph.Po
 	-rm -f ./$(DEPDIR)/main.Po

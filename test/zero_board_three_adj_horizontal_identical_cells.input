@@ -1,0 +1,11 @@
+seed = 1736261775
+set_immutable_cells(): 4, 6, 13, 20, 29, 33, 
+set_constraints(): 
+3, BOTTOM, =
+10, LEFT, x
+12, TOP, x
+14, RIGHT, x
+22, RIGHT, =
+28, RIGHT, =
+29, TOP, x
+33, LEFT, x

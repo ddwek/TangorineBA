@@ -18,8 +18,8 @@
  *
  */
 #include <gtk/gtk.h>
-#include "Callback.h"
 #include "Board.h"
+#include "Callback.h"
 
 Board board;
 

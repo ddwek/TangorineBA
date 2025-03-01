@@ -1,3 +1,13 @@
-2025-01-05  Daniel Dwek  <todovirtual15@gmail.com>
+2025-03-01  Daniel Dwek  <dwekdaniel@gmail.com>
+
+	0.2.0 Release
+	* We added testing and then we realize how much underrated QA Manual
+	  Testing is and now we know that QA Automation is really needed in
+	  order to enhance the app quality on CI/CD feedbacks and Agile
+	  Methodologies. There's a lot of explainations and details on files
+	  under "./src" (e.g., Board.cc and Callback.cc) and "./test"
+	  subdirectories.
+
+2025-01-05  Daniel Dwek  <dwekdaniel@gmail.com>
 
 	0.1.0 Initial release

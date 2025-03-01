@@ -19,11 +19,17 @@
  */
 #ifndef _BOARD_H_
 #define _BOARD_H_	1
-#include <vector>
-#include <list>
+#include <string>
 #include <gtk/gtk.h>
+#include "common.h"
 
-typedef enum { SHAPE_SUN = 0, SHAPE_MOON, SHAPE_EMPTY, SHAPE_IMM } shape_t;
+typedef enum { SHAPE_SUN = 0, SHAPE_MOON, SHAPE_EMPTY } shape_t;
+
+typedef struct shape_info_st {
+	int ncell;
+	shape_t shape;
+	bm_flags_t flags;
+} shape_info_t;
 
 class Board {
 public:
@@ -34,53 +40,73 @@ public:
 		int cell_1;
 		type_cons_t constr;
 	} constr_t;
-	typedef struct imm_st {
-		int ncell;
-		shape_t shape;
-		bool operator< (const struct imm_st& r);
-	} imm_t;
 
 	Board ();
+	Board (bool testing, std::string test_filename);
 	Board (Board&) = delete;
 	Board (Board&&) = delete;
 	Board& operator= (Board&) = delete;
 	~Board ();
 
+	void set_seed (int seed);
 	void draw_shape (int nrow, int ncol, shape_t shape);
 	void draw_cells (cairo_t *cr);
-	void set_hatching (int nrow, bool activate);
-	bool get_hatching (int nrow) const;
-	void draw_hatching (int nrow);
+	bool can_draw_hatching (int ncell);
+	void set_hatching (int ncell, bool hor);
+	void clear_hatching (int ncell, bool hor);
+	void draw_hatching (int ncell);
+	void draw_hatching_on_immutable ();
+	bool get_game_over ();
+	void set_game_over (bool game_over);
+	void show_congrats ();
 	void change_shape (int nrow, int ncol);
 	void change_row (int nrow, shape_t shape);
 	void change_col (int ncol, shape_t shape);
-	shape_t get_shape_status (int ncell) const;
-	shape_t get_user_guess (int ncell) const;
+	shape_info_t get_shape_status (int ncell) const;
+	shape_info_t get_user_guess (int ncell) const;
+	shape_info_t get_standard_solution (int ncell) const;
 	void set_shape_status (int ncell, shape_t sh);
-	void set_user_guess (int ncell, shape_t sh);
+	void set_user_guess (int ncell, shape_t sh, bm_flags_t flags);
 	int get_num_hsuns (int row);
 	int get_num_vsuns (int col);
 	int get_num_hmoons (int row);
 	int get_num_vmoons (int col);
 	int get_third_adjacent (int row, int col, line_type_check check);
 	int is_valid (int *row, int *col, int *nsuns, int *nmoons);
+
+	void validate_row_three_adjs (int nrow);
+	void validate_row_diff_num_of_shapes (int nrow);
+	void validate_row_constraints (int nrow);
 	void validate_row (int nrow);
+	void validate_col_three_adjs (int ncol);
+	void validate_col_diff_num_of_shapes (int ncol);
+	void validate_col_constraints (int ncol);
+	void validate_col (int ncol);
+
 	void prepare ();
-	void print ();
+	void print (bool is_testing, bool display_values, int n_step);
+	std::string get_debug (int n_step, int row, int col) const;
 	bool is_immutable (int n) const;
+	void set_immutable_cells (int *imm);
 	void set_immutable_cells ();
 	void draw_immutable_cells ();
+	void decode_flags (shape_info_t& ref);
+	void set_constraints (cons_t *cons);
 	void set_constraints ();
 	void draw_constraints ();
 	bool is_configured () const;
+	bool is_testing () const;
 private:
 	cairo_t *cr;
-	shape_t unique_solution[6][6];
-	shape_t user_guess[6][6];
-	std::list<constr_t> constraints;
-	imm_t immutable_cells[6];
-	bool hatching_cells[36];
+	shape_info_t standard_solution[6][6];
+	shape_info_t user_guess[6][6];
 	bool configured;
+	bool testing;
+	std::string test_filename;
+	std::string exp_filename;
+	int seed;
+	std::string debug[0x40][6][6];
+	bool game_over;
 };
 
 extern class Board board;

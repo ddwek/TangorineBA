@@ -20,6 +20,7 @@
 #ifndef _CALLBACK_H_
 #define _CALLBACK_H_	1
 #include <gtk/gtk.h>
+#include "common.h"
 
 typedef struct region_st {
 	int x0;
@@ -27,6 +28,12 @@ typedef struct region_st {
 	int x1;
 	int y1;
 } cell_region_t;
+
+typedef struct pending_events_st {
+	int ncell;
+	shape_t shape;
+	bm_flags_t flags;
+} pending_events_t;
 
 class CallbackData {
 public:

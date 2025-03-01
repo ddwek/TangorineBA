@@ -17,18 +17,22 @@
  *  along with TangorineBA.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include <iostream>
-#include <iomanip>
 #include <string>
 #include <list>
+#include <set>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include "common.h"
 #include "Board.h"
+#include "../test/Test.h"
+
+extern class Test test;
 
 bool are_there_pending_events = false;
 typedef struct pending_events_st {
 	int ncell;
 	shape_t shape;
+	bm_flags_t flags;
 } pending_events_t;
 std::list<pending_events_t> redraw_cells;
 
@@ -124,18 +128,22 @@ int draw_cb (GtkWidget *widget, cairo_t *cr, void *user_data)
 	std::list<pending_events_t>::iterator iter;
 
 	cairo_save (cr);
+	cbdata.set_cr (cr);
 	gdk_cairo_set_source_rgba (cr, &bgcolor);
 	cairo_paint (cr);
-	cbdata.set_cr (cr);
 	board.draw_cells (cr);
 	if (are_there_pending_events) {
 		for (iter = redraw_cells.begin (); iter != redraw_cells.end (); iter++) {
-			if (iter->shape == SHAPE_IMM)
-				continue;
+			board.draw_immutable_cells ();
 			board.draw_shape (iter->ncell / 6, iter->ncell % 6, iter->shape);
-			if (board.get_hatching (iter->ncell / 6))
-				board.draw_hatching (iter->ncell / 6);
+			if (board.can_draw_hatching (iter->ncell)) {
+				board.draw_hatching (iter->ncell);
+				board.draw_hatching_on_immutable ();
+			}
 		}
+
+		if (board.get_game_over ())
+			board.show_congrats ();
 		are_there_pending_events = false;
 	}
 	board.draw_constraints ();
@@ -146,13 +154,15 @@ int draw_cb (GtkWidget *widget, cairo_t *cr, void *user_data)
 
 bool button_press_cb (GtkWidget *widget, GdkEventButton *event, void *user_data)
 {
+	static std::set<int> s;
 	shape_t new_guess = SHAPE_EMPTY;
 	pending_events_t pending_event;
+	std::set<int>::iterator iter;
 
 	for (int i = 0; i < 36; i++) {
 		if (event->x > cbdata.get_region (i)->x0 && event->x < cbdata.get_region (i)->x1 &&
 		    event->y > cbdata.get_region (i)->y0 && event->y < cbdata.get_region (i)->y1) {
-			switch (board.get_user_guess (i)) {
+			switch (board.get_user_guess (i).shape) {
 			case SHAPE_SUN:
 				new_guess = SHAPE_MOON;
 				break;
@@ -162,22 +172,36 @@ bool button_press_cb (GtkWidget *widget, GdkEventButton *event, void *user_data)
 			case SHAPE_EMPTY:
 				new_guess = SHAPE_SUN;
 				break;
-			case SHAPE_IMM:	// never reached
-				break;
 			};
 
 			if (!board.is_immutable (i)) {
 				are_there_pending_events = true;
 				pending_event.ncell = i;
 				pending_event.shape = new_guess;
-				board.set_user_guess (i, new_guess);
+				pending_event.flags = board.get_standard_solution (i).flags;
+				board.set_user_guess (i, new_guess, pending_event.flags);
 				redraw_cells.push_back (pending_event);
 			} else {
 				are_there_pending_events = false;
-				continue;
 			}
+
 			board.validate_row (i / 6);
-			gtk_widget_queue_draw (widget);
+			board.validate_col (i % 6);
+			if (are_there_pending_events) {
+				if (board.get_user_guess (i).shape != SHAPE_EMPTY)
+					s.insert (i);
+empty_shape_erased:
+				for (iter = s.begin (); iter != s.end (); iter++) {
+					if (board.get_user_guess (*iter).shape == SHAPE_EMPTY) {
+						// Caught *iter with an empty shape! Erasing...
+						s.erase (iter);
+						goto empty_shape_erased;
+					}
+				}
+				if (s.size () == 30)
+					board.set_game_over (true);
+				gtk_widget_queue_draw (widget);
+			}
 		}
 	}
 
