@@ -1,0 +1,12 @@
+Installation
+------------
+
+In order to install TangorineBA by using the GNU Build System method,
+just open a terminal and type the following commands:
+
+	username@host: dir $ git clone https://github.com/ddwek/TangorineBA TangorineBA
+	username@host: dir $ cd TangorineBA
+	username@host: TangorineBA $ ./configure
+	username@host: TangorineBA $ make
+	[ become superuser if needed ]
+	username@host: TangorineBA $ make install-strip

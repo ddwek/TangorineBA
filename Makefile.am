@@ -1,0 +1,2 @@
+SUBDIRS = data src
+dist_doc_DATA = AUTHORS ChangeLog COPYING INSTALL README TODO

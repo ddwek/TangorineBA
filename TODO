@@ -1,0 +1,9 @@
+This is the list of items to add to, modify or remove from the
+current version:
+
+* Add Board::validate_col method to draw vertical hatching
+  lines in case you make a mistake when playing.
+
+* Add radial-increased animation for ending a game and it is OK.
+
+* Add undo/redo history of placements.

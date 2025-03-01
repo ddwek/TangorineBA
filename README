@@ -1,0 +1,38 @@
+TangorineBA
+===========
+
+TangorineBA is a clone from the classic LNKN Tango web app that you can play
+every day at 09:00 a.m., according to your timezone.
+
+Like such a game, the goal is place one coin at a time at the right place of
+the board, so that when you have located 18 suns and 18 moons in the correct
+order you win!
+
+Rules are really simple:
+
+1. Each row-column intersection (hereinafter, "cells") must be set to one
+   sun or one moon.
+
+2. As the board is a 6x6 matrix, you'll need to put three shapes for each
+   row and column.
+
+3. There must be no more of two identical shapes located adjacently. That is:
+
+   S M		ok
+   S S          ok
+   S S S	wrong disposition
+
+4. There are immutable cells, which contains one constant shape and cannot
+   be changed (BTW, "immutable" is a word that I borrowed from Python's
+   terminology, I think it's straightforward to understand for everyone).
+
+5. Each new board has some cells with restrictions on what is the kind of
+   shape you can place together. They are called "constraints" and, as
+   you may realized, they indicate whether the top, right, down or left cell
+   can store identical or different shapes. Cells with an '=' allow identical
+   shapes and cells with an 'x' do not.
+
+These are the first releases, there is so much work to do, but in the meantime
+you can play these versions which were tested on many systems.
+
+Hope you enjoy!!!
