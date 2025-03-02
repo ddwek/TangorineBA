@@ -174,7 +174,7 @@ Board::Board (bool testing, std::string test_filename)
 	}
 
 	for (int i = 0; i < 6; i++) {
-		for (int j = 0; j < 6; j++) {a
+		for (int j = 0; j < 6; j++) {
 			/*
 			 * Some configurations demonstrate that there's no a
 			 * "unique solution", but can be more than one and
