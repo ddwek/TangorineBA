@@ -1,5 +1,6 @@
 /*
- * Copyright 2025 Daniel Dwek
+ * BTree-dd.tcc: lightweight C++ template for handling B-Trees
+ * Copyright 2024-2025 Daniel Dwek
  *
  * This file is part of TangorineBA.
  *
@@ -73,8 +74,10 @@ public:
 
 	void set_current (struct btree_st<T> *c);
 
-	int *get_path (int leaf);
+	int *get_path (int leaf, int *out_level);
+	int get_size ();
 
+	void init (T data);
 	// You can add a leaf to the new branch with just one single statement
 	void add_branch (int leaf, T data);
 	struct btree_st<T> *get_leaf (int leaf);
@@ -88,18 +91,14 @@ private:
 	struct btree_st<T> *get_next_branch (int *info);
 	struct btree_st<T> *btree;
 	struct btree_st<T> *current;
-	struct btree_st<T> *pb;
 	struct btree_st<T> *last;
+	int size;
 };
 
 template<class T>
 BTree<T>::BTree (T data)
 {
-	btree = new struct btree_st<T>;
-	btree->pbranch = nullptr;
-	btree->leaf = 1;
-	btree->data = data;
-	current = btree;
+	init (data);
 }
 
 template<class T>
@@ -167,123 +166,93 @@ newpbranch:
 }
 
 template<class T>
-int *BTree<T>::get_path (int leaf)
+int *BTree<T>::get_path (int leaf, int *out_level)
 {
-	int i, j, sz = 0, level = 0;
-	int *pos = nullptr;
+	int i, j, t, idx, *path = nullptr;
 
-	for (j = 0; j < 0x20; j++) {
-		if (leaf >= (1 << j) && leaf < (1 << (j + 1))) {
-			level = j;
-			break;
-		}
+	for (i = 0, j = leaf; j; i++)
+		j >>= 1;
+	path = new int [i];
+	for (t = leaf, idx = 0; idx < i - 1; idx++) {
+		path[idx] = t & 0x1;
+		t >>= 1;
 	}
 
-	sz = level;
-	pos = new int [sz];
-	for (i = 0; i < sz; i++)
-		pos[i] = 1 << i;
-	for (i = sz - 1, j = 1; i > -1; i--, j++)
-		if (i == sz - j)
-			pos[i] = leaf / (1 << (j - 1));
-	for (i = 0; i < sz; i++)
-		pos[i] &= 1;
+	*out_level = i - 1;
+	return path;
+}
 
-	return pos;
+template<class T>
+int BTree<T>::get_size ()
+{
+	return this->size;
+}
+
+template<class T>
+void BTree<T>::init (T data)
+{
+	btree = new struct btree_st<T>;
+	btree->pbranch = nullptr;
+	btree->branch[0] = nullptr;
+	btree->branch[1] = nullptr;
+	btree->leaf = 1;
+	btree->data = data;
+	size = 1;
+
+	current = btree;
+	last = btree;
 }
 
 template<class T>
 void BTree<T>::add_branch (int leaf, T data)
 {
-	int i, j, t;
-	static int cnt[0x20] = { 0 };
+	int i, level, *path = nullptr;
 
-	if (leaf == 2 || leaf == 3) {
-		pb = btree;
-		goto setbranch;
-	}
-
-	for (i = 0; i < 0x20; i++) {
-		if (leaf == (1 << i)) {
-			for (j = 0; j < i - 2; j++)
-				pb = pb->pbranch;
-			for (j = 0; j < i - 1; j++)
-				pb = pb->branch[0];
-			goto setbranch;
+	path = get_path (leaf, &level);
+	for (last = btree, i = level - 1; i > -1; i--) {
+		if (!last->branch[path[i]]) {
+			last->branch[path[i]] = new struct btree_st<T>;
+			last->branch[path[i]]->pbranch = last;
 		}
+		last = last->branch[path[i]];
 	}
-
-	for (i = 4, j = 0; j < 0x20; j++, i <<= 1) {
-		if (leaf == (i * cnt[j] + 6 * (1 << j))) {
-			for (t = 0; t < j + 1; t++)
-				pb = pb->pbranch;
-			pb = pb->branch[1];
-			for (t = 0; t < j; t++)
-				pb = pb->branch[0];
-			cnt[j]++;
-			goto setbranch;
-		}
-	}
-
-setbranch:
-	if (leaf & 1)
-		pb = last->pbranch;
-	last = pb->branch[leaf & 1];
-	last = new struct btree_st<T>;
+	last->branch[0] = nullptr;
+	last->branch[1] = nullptr;
 	last->leaf = leaf;
 	last->data = data;
-	last->pbranch = pb;
-	pb->branch[leaf & 1] = last;
+	this->size++;
 }
 
 template<class T>
 struct btree_st<T> *BTree<T>::get_leaf (int leaf)
 {
 	int i, level, *path = nullptr;
-	struct btree_st<T> *iter = btree;
 
-	for (i = 0; ; i++) {
-		if (!leaf) {
-			level = 1;
-			break;
-		} else if (leaf >= (1 << i) && leaf < (1 << (i + 1))) {
-			level = i + 1;
-			break;
-		}
-	}
+	if (!leaf)
+		return btree;
 
-	path = get_path (leaf);
-	for (i = 0; i < level - 1; i++)
-		iter = iter->branch[path[i]];
+	path = get_path (leaf, &level);
+	for (last = btree, i = level - 1; i > -1; i--)
+		last = last->branch[path[i]];
 
-	return iter;
+	return last;
 }
 
 template<class T>
 void BTree<T>::clear ()
 {
-	int i, j, level = 0, *path = nullptr;
-	struct btree_st<T> *iter;
+	int i;
+	struct btree_st<T> *iter = nullptr;
 
-	i = last->leaf;
-	while (1) {
-		for (j = 0; j < 0x20; j++) {
-			if (i >= (1 << j) && i < (1 << (j + 1))) {
-				level = j;
-				break;
-			}
-		}
-
-		path = get_path (i);
-		for (iter = btree, j = 0; j < level; j++)
-			iter = iter->branch[path[j]];
-		// std::cout << "leaf = " << iter->leaf << std::endl;
+	for (i = this->size; i > 0; i--) {
+		iter = get_leaf (i);
 		delete iter;
-
-		i--;
-		if (i < 2)
-			break;
-	};
+		iter = nullptr;
+		this->size--;
+	}
+	btree = nullptr;
+	current = nullptr;
+	last = nullptr;
 }
 
 template<class T>
@@ -300,9 +269,7 @@ void BTree<T>::draw ()
 		for (i = 0; i < rlevel; i++)
 			std::cout << ("     |");
 		if (current)
-			std::cout << "     +---> " << current->leaf << " [" << (current->data == 1 ? "S" : "M") << "]" << std::endl;
-//				<< " [" << rlevel << "]"
-//				<< std::endl;
+			std::cout << "     +---> " << current->leaf << " [" << current << "]" << std::endl;
 		current = get_next_branch (&lv);
 		rlevel += lv;
 		if (rlevel < 0)

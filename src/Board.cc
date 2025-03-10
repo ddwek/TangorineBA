@@ -26,15 +26,8 @@
 #include "Digraph.h"
 #include "BTree-dd.tcc"
 #include "common.h"
+#include "Callback.h"
 #include "../test/Test.h"
-
-typedef enum { SHAPE_SUN = 0, SHAPE_MOON, SHAPE_EMPTY } shape_t;
-
-typedef struct pending_events_st {
-	int ncell;
-	shape_t shape;
-	bm_flags_t flags;
-} pending_events_t;
 
 typedef struct shape_info_st {
 	int ncell;
@@ -51,6 +44,8 @@ bool shape_info_t::operator< (const shape_info_t& ref) const
 }
 
 extern std::list<pending_events_t> redraw_cells;
+extern GtkWidget *da;
+extern class CallbackData cbdata;
 Test test;
 
 class Board {
@@ -70,6 +65,7 @@ public:
 	Board& operator= (Board&) = delete;
 	~Board ();
 
+	void new_game ();
 	void set_seed (int seed);
 	void draw_shape (int nrow, int ncol, shape_t shape);
 	void draw_cells (cairo_t *cr);
@@ -135,29 +131,7 @@ private:
 // Default constructor for interactive gameplay (i.e., not for testing)
 Board::Board ()
 {
-	seed = time (nullptr);
-	std::cout << "seed = " << seed << std::endl;
-	srand (seed);
-	prepare ();
-	game_over = false;
-
-	for (int i = 0; i < 6; i++) {
-		for (int j = 0; j < 6; j++) {
-			standard_solution[i][j].ncell = i * 6 + j;
-			user_guess[i][j].ncell = i * 6 + j;
-			user_guess[i][j].shape = SHAPE_EMPTY;
-
-			user_guess[i][j].flags.imm = 0;
-			user_guess[i][j].flags.top = 0;
-			user_guess[i][j].flags.top_equal = 0;
-			user_guess[i][j].flags.right = 0;
-			user_guess[i][j].flags.right_equal = 0;
-			user_guess[i][j].flags.bottom = 0;
-			user_guess[i][j].flags.bottom_equal = 0;
-			user_guess[i][j].flags.left = 0;
-			user_guess[i][j].flags.left_equal = 0;
-		}
-	}
+	new_game ();
 }
 
 // Constructor overloaded for testing (`make check`)
@@ -174,7 +148,7 @@ Board::Board (bool testing, std::string test_filename)
 	}
 
 	for (int i = 0; i < 6; i++) {
-		for (int j = 0; j < 6; j++) {a
+		for (int j = 0; j < 6; j++) {
 			/*
 			 * Some configurations demonstrate that there's no a
 			 * "unique solution", but can be more than one and
@@ -201,6 +175,50 @@ Board::Board (bool testing, std::string test_filename)
 
 Board::~Board ()
 {
+}
+
+void Board::new_game ()
+{
+	seed = time (nullptr);
+	std::cout << "seed = " << seed << std::endl;
+	srand (seed);
+	prepare ();
+	game_over = false;
+
+	for (int i = 0; i < 6; i++) {
+		for (int j = 0; j < 6; j++) {
+			standard_solution[i][j].ncell = i * 6 + j;
+			standard_solution[i][j].flags.imm = 0;
+			standard_solution[i][j].flags.top = 0;
+			standard_solution[i][j].flags.top_equal = 0;
+			standard_solution[i][j].flags.right = 0;
+			standard_solution[i][j].flags.right_equal = 0;
+			standard_solution[i][j].flags.bottom = 0;
+			standard_solution[i][j].flags.bottom_equal = 0;
+			standard_solution[i][j].flags.left = 0;
+			standard_solution[i][j].flags.left_equal = 0;
+			standard_solution[i][j].flags.claim_for_hor_hatching = 0;
+			standard_solution[i][j].flags.claim_for_ver_hatching = 0;
+
+			user_guess[i][j].ncell = i * 6 + j;
+			user_guess[i][j].shape = SHAPE_EMPTY;
+			user_guess[i][j].flags.imm = 0;
+			user_guess[i][j].flags.top = 0;
+			user_guess[i][j].flags.top_equal = 0;
+			user_guess[i][j].flags.right = 0;
+			user_guess[i][j].flags.right_equal = 0;
+			user_guess[i][j].flags.bottom = 0;
+			user_guess[i][j].flags.bottom_equal = 0;
+			user_guess[i][j].flags.left = 0;
+			user_guess[i][j].flags.left_equal = 0;
+			user_guess[i][j].flags.claim_for_hor_hatching = 0;
+			user_guess[i][j].flags.claim_for_ver_hatching = 0;
+		}
+	}
+	this->configured = false;
+	cbdata.set_minutes (0);
+	cbdata.set_seconds (0);
+	gtk_widget_queue_draw (da);
 }
 
 void Board::set_seed (int seed)
@@ -812,6 +830,22 @@ std::list<std::vector<int>>::iterator get_nth_iter (std::list<std::vector<int>>&
 	return l.end ();
 }
 
+int *get_path2 (int n)
+{
+	int i, j, t, idx, *path = nullptr;
+
+	for (i = 0, j = n; j; i++)
+		j >>= 1;
+
+	path = new int [i];
+	for (t = n, idx = 0; idx < i; idx++) {
+		path[idx] = t & 0x1;
+		t >>= 1;
+	}
+
+	return path;
+}
+
 /*
  * Before the game starts, we need to prepare all the cells for the standard
  * solution. We know that's a little bit tricky to explain what we did for it
@@ -827,11 +861,11 @@ std::list<std::vector<int>>::iterator get_nth_iter (std::list<std::vector<int>>&
  */
 void Board::prepare ()
 {
-	int i, j, t, *path, err;
-	int nsuns, nmoons, row, col;
+	int i, j, t, level, *path, err;
+	int nsuns = 0, nmoons = 0, row, col;
 	int **mtx = nullptr;
 	bool has_three_adjs = false;
-	BTree<int> bt (-1);
+	BTree<int> bt (1);
 	std::vector<int> hvect (6);
 	std::list<digraph_t> *l;
 	std::list<std::vector<int>> hlst;
@@ -847,8 +881,9 @@ void Board::prepare ()
 
 	for (i = 0x40; i < 0x80; i++) {
 		has_three_adjs = false;
-		path = bt.get_path (i);
-		for (j = 0; j < 6; j++) {
+		path = bt.get_path (i, &level);
+//		for (j = 0; j < 6; j++) {
+		for (j = level - 1; j > -1; j--) {
 			if (path[j])
 				nsuns++;
 			else
@@ -859,15 +894,20 @@ void Board::prepare ()
 			for (j = 0; j < 4; j++) {
 				if (path[j] == path[j + 1] && path[j + 1] == path[j + 2]) {
 					has_three_adjs = true;
+					nsuns = 0;
+					nmoons = 0;
 					break;
 				}
 			}
 
 			if (!has_three_adjs) {
-				for (j = 0; j < 6; j++)
+//				for (j = 0; j < 6; j++)
+				for (j = level - 1; j > -1; j--)
 					hvect[j] = path[j];
 				hlst.push_back (hvect);
 				has_three_adjs = false;
+				nsuns = 0;
+				nmoons = 0;
 			}
 		} else {
 			nsuns = 0;

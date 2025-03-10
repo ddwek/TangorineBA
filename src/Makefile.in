@@ -100,8 +100,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_TangorineBA_OBJECTS = Board.$(OBJEXT) Digraph.$(OBJEXT) \
-	Callback.$(OBJEXT) resources.$(OBJEXT) ../test/Test.$(OBJEXT) \
-	main.$(OBJEXT)
+	Callback.$(OBJEXT) ../test/Test.$(OBJEXT) main.$(OBJEXT)
 TangorineBA_OBJECTS = $(am_TangorineBA_OBJECTS)
 TangorineBA_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -121,7 +120,7 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ../test/$(DEPDIR)/Test.Po ./$(DEPDIR)/Board.Po \
 	./$(DEPDIR)/Callback.Po ./$(DEPDIR)/Digraph.Po \
-	./$(DEPDIR)/main.Po ./$(DEPDIR)/resources.Po
+	./$(DEPDIR)/main.Po
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -257,16 +256,15 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-TangorineBA_DATADIR = ${prefix}/share/TangorineBA/
+TANGORINEBA_DATADIR = ${prefix}/share/TangorineBA/
 AM_CXXFLAGS = `pkg-config --cflags gtk+-3.0` -std=c++11 -O2 \
-	-DTangorineBA_DATADIR=\"${TangorineBA_DATADIR}\" \
-	-DTangorineBA=\"${datarootdir}\"
+	-DTANGORINEBA_DATADIR=\"${TANGORINEBA_DATADIR}\" \
+	-DTANGORINEBA=\"${datarootdir}\"
 AUTOMAKE_OPTIONS = subdir-objects
 TangorineBA_SOURCES = \
 		Board.cc \
 		Digraph.cc \
 		Callback.cc \
-		resources.cc \
 		../test/Test.cc \
 		main.cc
 
@@ -370,7 +368,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Callback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Digraph.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resources.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -527,7 +524,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/Callback.Po
 	-rm -f ./$(DEPDIR)/Digraph.Po
 	-rm -f ./$(DEPDIR)/main.Po
-	-rm -f ./$(DEPDIR)/resources.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -578,7 +574,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/Callback.Po
 	-rm -f ./$(DEPDIR)/Digraph.Po
 	-rm -f ./$(DEPDIR)/main.Po
-	-rm -f ./$(DEPDIR)/resources.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

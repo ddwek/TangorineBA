@@ -23,8 +23,6 @@
 #include <gtk/gtk.h>
 #include "common.h"
 
-typedef enum { SHAPE_SUN = 0, SHAPE_MOON, SHAPE_EMPTY } shape_t;
-
 typedef struct shape_info_st {
 	int ncell;
 	shape_t shape;
@@ -48,6 +46,7 @@ public:
 	Board& operator= (Board&) = delete;
 	~Board ();
 
+	void new_game ();
 	void set_seed (int seed);
 	void draw_shape (int nrow, int ncol, shape_t shape);
 	void draw_cells (cairo_t *cr);
@@ -96,6 +95,7 @@ public:
 	void draw_constraints ();
 	bool is_configured () const;
 	bool is_testing () const;
+
 private:
 	cairo_t *cr;
 	shape_info_t standard_solution[6][6];
