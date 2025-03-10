@@ -50,4 +50,12 @@ typedef struct parsed_st {
 	cons_t cons[8];		// Just 8 constraints per board, but one cell can have more than one constraint
 } in_parsed_t;
 
+typedef enum { SHAPE_SUN = 0, SHAPE_MOON, SHAPE_EMPTY } shape_t;
+
+typedef struct pending_events_st {
+	int ncell;
+	shape_t shape;
+	bm_flags_t flags;
+} pending_events_t;
+
 #endif

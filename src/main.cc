@@ -21,25 +21,39 @@
 #include "Board.h"
 #include "Callback.h"
 
+GtkWidget *main_window, *da, *time_da;
+GtkWidget *new_game_btn, *clear_game_btn;
 Board board;
 
 void activate (GtkApplication *app, void *data)
 {
-	GtkWidget *win;
-	GtkWidget *da;
+	GResource *res;
+	GError *error = nullptr;
+	GtkBuilder *builder;
 
-	win = gtk_application_window_new (app);
-	da = gtk_drawing_area_new ();
-	gtk_widget_set_size_request (da, 480, 480);
-	gtk_container_add (GTK_CONTAINER (win), da);
+	res = g_resource_load (TANGORINEBA_DATADIR "data/ui.gresource", &error);
+	g_resources_register (res);
+	builder = gtk_builder_new_from_resource ("/org/gtk/TangorineBA/main-window.ui");
+	g_resources_unregister (res);
 
-	g_signal_connect (win, "destroy", G_CALLBACK (gtk_widget_destroy), win);
+	main_window = GTK_WIDGET (gtk_builder_get_object (builder, "main_window"));
+	gtk_application_add_window (app, GTK_WINDOW (main_window));
+
+	da = GTK_WIDGET (gtk_builder_get_object (builder, "da"));
+	time_da = GTK_WIDGET (gtk_builder_get_object (builder, "time_da"));
+	new_game_btn = GTK_WIDGET (gtk_builder_get_object (builder, "new_game_btn"));
+	clear_game_btn = GTK_WIDGET (gtk_builder_get_object (builder, "clear_game_btn"));
+
+	g_signal_connect (main_window, "destroy", G_CALLBACK (gtk_widget_destroy), main_window);
 	g_signal_connect (da, "configure-event", G_CALLBACK (configure_cb), nullptr);
 	g_signal_connect (da, "draw", G_CALLBACK (draw_cb), nullptr);
 	g_signal_connect (da, "button-press-event", G_CALLBACK (button_press_cb), nullptr);
 	gtk_widget_set_events (da, gtk_widget_get_events (da) | GDK_BUTTON_PRESS_MASK);
+	g_signal_connect (time_da, "draw", G_CALLBACK (draw_timer_cb), nullptr);
+	g_signal_connect (new_game_btn, "clicked", G_CALLBACK (new_game_cb), nullptr);
+	g_signal_connect (clear_game_btn, "clicked", G_CALLBACK (clear_game_cb), nullptr);
 
-	gtk_widget_show_all (win);
+	gtk_widget_show_all (GTK_WIDGET (main_window));
 }
 
 int main (int argc, char **argv)

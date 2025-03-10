@@ -17,8 +17,6 @@
  *  along with TangorineBA.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include <iostream>
-#include <iomanip>
 #include <vector>
 #include <list>
 
@@ -58,6 +56,8 @@ std::list<digraph_t> *digraph_get_paths (int **inmtx, int dim, int a, int b, int
 	nextrow_int = 1;
 	savedrow[0] = row;
 	nextcol[0] = 1;
+	for (i = 1; i < dim; i++)
+		nextcol[i] = -1;
 	level = 0;
 	niterations = 0;
 	for (;;) {

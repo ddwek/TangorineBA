@@ -1,3 +1,10 @@
+2025-03-10  Daniel Dwek  <dwekdaniel@gmail.com>
+
+	0.3.0 Release
+	* New features like adding a red led timer on the top-right of the
+	  window, a button to start a new game and another button to clear
+	  (i.e., "reset") the current game to its standard solution values
+
 2025-03-02  Daniel Dwek  <dwekdaniel@gmail.com>
 
 	0.2.1 Release
