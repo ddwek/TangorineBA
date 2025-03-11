@@ -599,7 +599,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = subdir-objects
 TANGORINEBA_DATADIR = ${prefix}/share/TangorineBA/
-AM_CXXFLAGS = `pkg-config --cflags gtk+-3.0` -std=c++11 -O2 \
+AM_CXXFLAGS = `pkg-config --cflags gtk+-3.0` -std=c++11 -O2 -g0 \
 	-DTANGORINEBA_DATADIR=\"${TANGORINEBA_DATADIR}\" \
 	-DTANGORINEBA=\"${datarootdir}\"
 zero_board_two_regular_cells_with_horizontal_equal_shapes_SOURCES = \

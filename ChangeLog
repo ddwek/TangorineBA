@@ -1,3 +1,16 @@
+2025-03-11  Daniel Dwek  <dwekdaniel@gmail.com>
+
+	0.3.1 Release
+	* Fixed validate_row_constraints () and validate_col_constraints ()
+	* get_path2() removed, due it's no longer needed (it is implemented
+	  on BTree-dd.tcc as "get_path()"
+	* Fixed clear_game_cb() from a bogus behavior in which an immutable
+	  cell was displayed with hatchings on the same row and same column
+	  than the current clicked
+	* New global variable "setlist" just for sharing states declared on
+	  src/Callback.cc. The older approach based on a static variable
+	  within "button_press_cb()" was replaced for was described above
+
 2025-03-10  Daniel Dwek  <dwekdaniel@gmail.com>
 
 	0.3.0 Release

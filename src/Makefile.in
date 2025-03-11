@@ -257,7 +257,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 TANGORINEBA_DATADIR = ${prefix}/share/TangorineBA/
-AM_CXXFLAGS = `pkg-config --cflags gtk+-3.0` -std=c++11 -O2 \
+AM_CXXFLAGS = `pkg-config --cflags gtk+-3.0` -std=c++11 -O2 -g0 \
 	-DTANGORINEBA_DATADIR=\"${TANGORINEBA_DATADIR}\" \
 	-DTANGORINEBA=\"${datarootdir}\"
 AUTOMAKE_OPTIONS = subdir-objects
