@@ -127,7 +127,6 @@ private:
 	bool game_over;
 };
 
-
 // Default constructor for interactive gameplay (i.e., not for testing)
 Board::Board ()
 {
@@ -625,7 +624,14 @@ void Board::validate_row_constraints (int nrow)
 		if (r.flags.right) {
 			shape_info_t& next = user_guess[nrow][i + 1];
 			if (r.flags.right_equal) {
-				if (r.shape != next.shape && r.shape != SHAPE_EMPTY) {
+				// We need to check for the value of "next.shape"
+				// to be not equal to SHAPE_EMPTY alongside the
+				// r.shape as well. If we wouldn't do, it would
+				// lead to a buggy behavior by hatching the first
+				// or the second cell even when they should not
+				// do it. Same fix for right_diff and corresponding
+				// validate_col_constraints ()
+				if (r.shape != next.shape && r.shape != SHAPE_EMPTY && next.shape != SHAPE_EMPTY) {
 					set_hatching (nrow * 6 + i + 0, true);
 					set_hatching (nrow * 6 + i + 1, true);
 				} else {
@@ -636,7 +642,7 @@ void Board::validate_row_constraints (int nrow)
 					}
 				}
 			} else {
-				if (r.shape == next.shape && r.shape != SHAPE_EMPTY) {
+				if (r.shape == next.shape && r.shape != SHAPE_EMPTY && next.shape != SHAPE_EMPTY) {
 					set_hatching (nrow * 6 + i + 0, true);
 					set_hatching (nrow * 6 + i + 1, true);
 				} else {
@@ -655,7 +661,7 @@ void Board::validate_row_constraints (int nrow)
 		if (r.flags.left) {
 			shape_info_t& prev = user_guess[nrow][i - 1];
 			if (r.flags.left_equal) {
-				if (r.shape != prev.shape && r.shape != SHAPE_EMPTY) {
+				if (r.shape != prev.shape && r.shape != SHAPE_EMPTY && prev.shape != SHAPE_EMPTY) {
 					set_hatching (nrow * 6 + i - 0, true);
 					set_hatching (nrow * 6 + i - 1, true);
 				} else {
@@ -666,7 +672,7 @@ void Board::validate_row_constraints (int nrow)
 					}
 				}
 			} else {
-				if (r.shape == prev.shape && r.shape != SHAPE_EMPTY) {
+				if (r.shape == prev.shape && r.shape != SHAPE_EMPTY && prev.shape != SHAPE_EMPTY) {
 					set_hatching (nrow * 6 + i - 0, true);
 					set_hatching (nrow * 6 + i - 1, true);
 				} else {
@@ -755,7 +761,7 @@ void Board::validate_col_constraints (int ncol)
 		if (r.flags.top) {
 			shape_info_t& prev = user_guess[i - 1][ncol];
 			if (r.flags.top_equal) {
-				if (r.shape != prev.shape && r.shape != SHAPE_EMPTY) {
+				if (r.shape != prev.shape && r.shape != SHAPE_EMPTY && prev.shape != SHAPE_EMPTY) {
 					set_hatching ((i - 0) * 6 + ncol, false);
 					set_hatching ((i - 1) * 6 + ncol, false);
 				} else {
@@ -766,7 +772,7 @@ void Board::validate_col_constraints (int ncol)
 					}
 				}
 			} else {
-				if (r.shape == prev.shape && r.shape != SHAPE_EMPTY) {
+				if (r.shape == prev.shape && r.shape != SHAPE_EMPTY && prev.shape != SHAPE_EMPTY) {
 					set_hatching ((i - 0) * 6 + ncol, false);
 					set_hatching ((i - 1) * 6 + ncol, false);
 				} else {
@@ -785,7 +791,7 @@ void Board::validate_col_constraints (int ncol)
 		if (r.flags.bottom) {
 			shape_info_t& next = user_guess[i + 1][ncol];
 			if (r.flags.bottom_equal) {
-				if (r.shape != next.shape && r.shape != SHAPE_EMPTY) {
+				if (r.shape != next.shape && r.shape != SHAPE_EMPTY && next.shape != SHAPE_EMPTY) {
 					set_hatching ((i + 0) * 6 + ncol, false);
 					set_hatching ((i + 1) * 6 + ncol, false);
 				} else {
@@ -796,7 +802,7 @@ void Board::validate_col_constraints (int ncol)
 					}
 				}
 			} else {
-				if (r.shape == next.shape && r.shape != SHAPE_EMPTY) {
+				if (r.shape == next.shape && r.shape != SHAPE_EMPTY && next.shape != SHAPE_EMPTY) {
 					set_hatching ((i + 0) * 6 + ncol, false);
 					set_hatching ((i + 1) * 6 + ncol, false);
 				} else {
@@ -828,22 +834,6 @@ std::list<std::vector<int>>::iterator get_nth_iter (std::list<std::vector<int>>&
 			return iter;
 
 	return l.end ();
-}
-
-int *get_path2 (int n)
-{
-	int i, j, t, idx, *path = nullptr;
-
-	for (i = 0, j = n; j; i++)
-		j >>= 1;
-
-	path = new int [i];
-	for (t = n, idx = 0; idx < i; idx++) {
-		path[idx] = t & 0x1;
-		t >>= 1;
-	}
-
-	return path;
 }
 
 /*
@@ -882,7 +872,6 @@ void Board::prepare ()
 	for (i = 0x40; i < 0x80; i++) {
 		has_three_adjs = false;
 		path = bt.get_path (i, &level);
-//		for (j = 0; j < 6; j++) {
 		for (j = level - 1; j > -1; j--) {
 			if (path[j])
 				nsuns++;
@@ -901,7 +890,6 @@ void Board::prepare ()
 			}
 
 			if (!has_three_adjs) {
-//				for (j = 0; j < 6; j++)
 				for (j = level - 1; j > -1; j--)
 					hvect[j] = path[j];
 				hlst.push_back (hvect);

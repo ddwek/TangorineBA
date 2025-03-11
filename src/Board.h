@@ -19,6 +19,7 @@
  */
 #ifndef _BOARD_H_
 #define _BOARD_H_	1
+#include <set>
 #include <string>
 #include <gtk/gtk.h>
 #include "common.h"
@@ -95,7 +96,6 @@ public:
 	void draw_constraints ();
 	bool is_configured () const;
 	bool is_testing () const;
-
 private:
 	cairo_t *cr;
 	shape_info_t standard_solution[6][6];

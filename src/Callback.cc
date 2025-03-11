@@ -17,6 +17,8 @@
  *  along with TangorineBA.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <list>
@@ -38,6 +40,10 @@ extern class Test test;
 extern GtkWidget *da;
 bool are_there_pending_events = false;
 std::list<pending_events_t> redraw_cells;
+
+// Maybe "setlist" becomes a private member of a future class Window,
+// with getters and setters handling it, but it works fine so far
+std::set<int> setlist;
 
 class CallbackData {
 public:
@@ -397,19 +403,29 @@ void clear_game_cb (GtkButton *btn)
 {
 	for (int i = 0; i < 36; i++) {
 		shape_info_t r = board.get_standard_solution (i);
-		board.set_user_guess (i, r.shape, r.flags);
+		// We must to make sure that shapes on immutable cells are
+		// rendered ok, as well as all of those cells which are not
+		// immutable. This is really important since it fixes a
+		// bug from previous versions, which displayed immutable
+		// cells with hatchings on the same row and the same column
+		// than the current clicked
+		if (!r.flags.imm)
+			board.set_user_guess (i, SHAPE_EMPTY, r.flags);
+		else
+			board.set_user_guess (i, r.shape, r.flags);
 		board.clear_hatching (i, true);
 		board.clear_hatching (i, false);
 	}
 	redraw_cells.clear ();
+	setlist.clear ();
 	are_there_pending_events = true;
-
 	gtk_widget_queue_draw (da);
 }
 
 void new_game_cb (GtkButton *btn)
 {
 	redraw_cells.clear ();
+	setlist.clear ();
 	are_there_pending_events = true;
 	board.new_game ();
 }
@@ -456,7 +472,6 @@ int draw_cb (GtkWidget *widget, cairo_t *cr, void *user_data)
 
 bool button_press_cb (GtkWidget *widget, GdkEventButton *event, void *user_data)
 {
-	static std::set<int> s;
 	shape_t new_guess = SHAPE_EMPTY;
 	pending_events_t pending_event;
 	std::set<int>::iterator iter;
@@ -490,18 +505,32 @@ bool button_press_cb (GtkWidget *widget, GdkEventButton *event, void *user_data)
 			board.validate_row (i / 6);
 			board.validate_col (i % 6);
 			if (are_there_pending_events) {
-				if (board.get_user_guess (i).shape != SHAPE_EMPTY)
-					s.insert (i);
+				if (board.get_user_guess (i).shape != SHAPE_EMPTY &&
+				    !board.get_user_guess (i).flags.claim_for_hor_hatching &&
+				    !board.get_user_guess (i).flags.claim_for_ver_hatching)
+					setlist.insert (i);
 empty_shape_erased:
-				for (iter = s.begin (); iter != s.end (); iter++) {
+				for (iter = setlist.begin (); iter != setlist.end (); iter++) {
 					if (board.get_user_guess (*iter).shape == SHAPE_EMPTY) {
 						// Caught *iter with an empty shape! Erasing...
-						s.erase (iter);
+						setlist.erase (iter);
 						goto empty_shape_erased;
 					}
 				}
-				if (s.size () == 30)
+
+				if (setlist.size () == 30) {
+					// If we are about to end a game, we must to reset this
+					// setlist to zero amount of items because we use it as
+					// a global variable. We should do the same if we used
+					// static variables. While we're going to move to a
+					// Window class which holds much of this stuff, our
+					// approach is a little bit old-fashion now, that is, we
+					// keep using global vars inside callbacks...
+					setlist.clear ();
 					board.set_game_over (true);
+				} else {
+					std::cout << "setlist.size (): " << setlist.size () << std::endl;
+				}
 				gtk_widget_queue_draw (widget);
 			}
 		}
