@@ -1,3 +1,15 @@
+2025-03-13  Daniel Dwek  <dwekdaniel@gmail.com>
+
+	0.3.2 Release
+	* Updated many Board methods to support scalable graphics via cairo
+	  API, not SVG images. It includes X/Y factors which are used to
+	  multiply the original sizes of all the elements into the main
+	  window to those ones taking new values when the window is resized
+	* New CallbackData methods, start_timer() and stop_timer(). As you
+	  can realize, the start_timer() is called each time a new game is
+	  run and, on the other hand, stop_timer() is called previously to
+	  show congratulations for having won the current game
+
 2025-03-11  Daniel Dwek  <dwekdaniel@gmail.com>
 
 	0.3.1 Release

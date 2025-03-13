@@ -44,7 +44,7 @@ bool shape_info_t::operator< (const shape_info_t& ref) const
 }
 
 extern std::list<pending_events_t> redraw_cells;
-extern GtkWidget *da;
+extern GtkWidget *da, *time_da;
 extern class CallbackData cbdata;
 Test test;
 
@@ -217,7 +217,9 @@ void Board::new_game ()
 	this->configured = false;
 	cbdata.set_minutes (0);
 	cbdata.set_seconds (0);
+	cbdata.start_timer ();
 	gtk_widget_queue_draw (da);
+	gtk_widget_queue_draw (time_da);
 }
 
 void Board::set_seed (int seed)
@@ -234,26 +236,28 @@ void Board::draw_shape (int nrow, int ncol, shape_t shape)
 	struct _GdkRGBA darkercolor = { 0.0, 0.1, 0.2, 1.0 };
 	struct _GdkRGBA gridcolor = normalcolor;
 
+	double x_scale = gtk_widget_get_allocated_width (GTK_WIDGET (da)) / 480.0;
+	double y_scale = gtk_widget_get_allocated_height (GTK_WIDGET (da)) / 480.0;
 	cairo_save (cr);
 	if (shape == SHAPE_SUN) {		// Draw just a sun...
 		gdk_cairo_set_source_rgba (cr, &color[SHAPE_SUN]);
-		cairo_arc (cr, ncol * 80 + 40, nrow * 80 + 40, 30, 0, 2 * G_PI);
+		cairo_arc (cr, (ncol * 80 + 40) * x_scale, (nrow * 80 + 40) * y_scale, 30 * x_scale, 0 * y_scale, 2 * G_PI);
 		cairo_fill (cr);
 	} else if (shape == SHAPE_MOON) {	// ...and a moon
 		if (standard_solution[nrow][ncol].flags.imm)
 			gridcolor = darkercolor;
 		gdk_cairo_set_source_rgba (cr, &gridcolor);
-		cairo_rectangle (cr, ncol * 80 + 2, nrow * 80 + 2, 76, 76);
+		cairo_rectangle (cr, (ncol * 80 + 2) * x_scale, (nrow * 80 + 2) * y_scale, 76 * x_scale, 76 * y_scale);
 		cairo_fill (cr);
 		gdk_cairo_set_source_rgba (cr, &color[SHAPE_MOON]);
-		cairo_arc_negative (cr, ncol * 80 + 40, nrow * 80 + 40, 30, 0.75 * G_PI, -0.25 * G_PI);
+		cairo_arc_negative (cr, (ncol * 80 + 40) * x_scale, (nrow * 80 + 40) * y_scale, 26 * y_scale, 0.75 * G_PI * x_scale, -0.25 * G_PI * y_scale);
 		cairo_fill (cr);
 		gdk_cairo_set_source_rgba (cr, &gridcolor);
-		cairo_arc_negative (cr, ncol * 80 + 30, nrow * 80 + 30, 32, 0.75 * G_PI, -0.25 * G_PI);
+		cairo_arc_negative (cr, (ncol * 80 + 30) * x_scale, (nrow * 80 + 30) * y_scale, 28 * y_scale, 0.75 * G_PI * x_scale, -0.25 * G_PI * y_scale);
 		cairo_fill (cr);
 	} else if (shape == SHAPE_EMPTY) {	// Draw nothing at all
 		gdk_cairo_set_source_rgba (cr, &gridcolor);
-		cairo_rectangle (cr, ncol * 80 + 2, nrow * 80 + 2, 76, 76);
+		cairo_rectangle (cr, (ncol * 80 + 2) * x_scale, (nrow * 80 + 2) * y_scale, 76 * x_scale, 76 * y_scale);
 		cairo_fill (cr);
 	}
 	cairo_restore (cr);
@@ -269,9 +273,11 @@ void Board::draw_cells (cairo_t *cr)
 	gdk_cairo_set_source_rgba (cr, &gridcolor);
 
 	// The original size of the window is 480x480 px
+	double x_scale = gtk_widget_get_allocated_width (GTK_WIDGET (da)) / 480.0;
+	double y_scale = gtk_widget_get_allocated_height (GTK_WIDGET (da)) / 480.0;
 	for (i = 0; i < 6; i++)
 		for (j = 0; j < 6; j++)
-			cairo_rectangle (cr, i * 80 + 2, j * 80 + 2, 76, 76);
+			cairo_rectangle (cr, (i * 80 + 2) * x_scale, (j * 80 + 2) * y_scale, 76 * x_scale, 76 * y_scale);
 	cairo_fill (cr);
 	cairo_restore (cr);
 
@@ -317,16 +323,18 @@ void Board::draw_hatching (int ncell)
 {
 	struct _GdkRGBA hatching_color = { 0.6, 0.0, 0.0, 1.0 };
 
+	double x_scale = gtk_widget_get_allocated_width (GTK_WIDGET (da)) / 480.0;
+	double y_scale = gtk_widget_get_allocated_height (GTK_WIDGET (da)) / 480.0;
 	cairo_save (cr);
 	gdk_cairo_set_source_rgba (cr, &hatching_color);
 	for (int i = 0; i < 4; i++) {
-		cairo_move_to (cr, (ncell % 6) * 80 + 4, (ncell / 6) * 80 + 80 - 4 - i * 20);
-		cairo_line_to (cr, (ncell % 6) * 80 + 80 - i * 20 - 4, (ncell / 6) * 80 + 4);
+		cairo_move_to (cr, ((ncell % 6) * 80 + 4) * x_scale, ((ncell / 6) * 80 + 80 - 4 - i * 20) * y_scale);
+		cairo_line_to (cr, ((ncell % 6) * 80 + 80 - i * 20 - 4) * x_scale, ((ncell / 6) * 80 + 4) * y_scale);
 	}
 
 	for (int i = 0; i < 4; i++) {
-		cairo_move_to (cr, (ncell % 6) * 80 + 4 + i * 20, (ncell / 6) * 80 + 80 - 4);
-		cairo_line_to (cr, (ncell % 6) * 80 + 80 - 4, (ncell / 6) * 80 + 4 + i * 20);
+		cairo_move_to (cr, ((ncell % 6) * 80 + 4 + i * 20) * x_scale, ((ncell / 6) * 80 + 80 - 4) * y_scale);
+		cairo_line_to (cr, ((ncell % 6) * 80 + 80 - 4) * x_scale, ((ncell / 6) * 80 + 4 + i * 20) * y_scale);
 	}
 	cairo_stroke (cr);
 	cairo_restore (cr);
@@ -389,16 +397,18 @@ void Board::show_congrats ()
 	struct _GdkRGBA bgcolor = { 0.3, 0.6, 0.3, 0.8 };
 	struct _GdkRGBA fgcolor = { 1.0, 1.0, 1.0, 1.0 };
 
+	double x_scale = gtk_widget_get_allocated_width (da) / 480.0;
+	double y_scale = gtk_widget_get_allocated_height (da) / 480.0;
 	cairo_save (cr);
 	gdk_cairo_set_source_rgba (cr, &bgcolor);
-	cairo_rectangle (cr, 120, 180, 240, 120);
+	cairo_rectangle (cr, 120 * x_scale, 180 * y_scale, 240 * x_scale, 120 * y_scale);
 	cairo_fill (cr);
 	cairo_restore (cr);
 
 	cairo_save (cr);
 	gdk_cairo_set_source_rgba (cr, &fgcolor);
-	cairo_move_to (cr, 140, 250);
-	cairo_scale (cr, 4.0, 4.0);
+	cairo_move_to (cr, 140 * x_scale, 250 * y_scale);
+	cairo_scale (cr, 4.0 * x_scale, 4.0 * y_scale);
 	cairo_select_font_face (cr, "cairo:monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 	cairo_show_text (cr, "You won!!!");
 	cairo_restore (cr);
@@ -1149,11 +1159,13 @@ void Board::draw_immutable_cells ()
 	int i;
 	struct _GdkRGBA darkercolor = { 0.0, 0.1, 0.2, 1.0 };
 
+	double x_scale = gtk_widget_get_allocated_width (GTK_WIDGET (da)) / 480.0;
+	double y_scale = gtk_widget_get_allocated_height (GTK_WIDGET (da)) / 480.0;
 	cairo_save (cr);
 	gdk_cairo_set_source_rgba (cr, &darkercolor);
 	for (i = 0; i < 36; i++) {
 		if (standard_solution[i / 6][i % 6].flags.imm) {
-			cairo_rectangle (cr, (i % 6) * 80 + 2, (i / 6) * 80 + 2, 76, 76);
+			cairo_rectangle (cr, ((i % 6) * 80 + 2) * x_scale, ((i / 6) * 80 + 2) * y_scale, 76 * x_scale, 76 * y_scale);
 			cairo_fill (cr);
 			draw_shape (i / 6, i % 6, standard_solution[i / 6][i % 6].shape);
 		}
@@ -1348,6 +1360,8 @@ void Board::draw_constraints ()
 	int i;
 	struct _GdkRGBA color = { 0.0, 1.0, 0.0, 1.0 };
 
+	double x_scale = gtk_widget_get_allocated_width (GTK_WIDGET (da)) / 480.0;
+	double y_scale = gtk_widget_get_allocated_height (GTK_WIDGET (da)) / 480.0;
 	cairo_save (cr);
 	gdk_cairo_set_source_rgba (cr, &color);
 	for (i = 0; i < 36; i++) {
@@ -1356,15 +1370,15 @@ void Board::draw_constraints ()
 			if (i < 6)
 				continue;
 			if (ref.flags.top_equal) {
-				cairo_move_to (cr, (i % 6) * 80 + 40 - 5, (i / 6 - 1) * 80 + 80 - 3);
-				cairo_line_to (cr, (i % 6) * 80 + 40 + 5, (i / 6 - 1) * 80 + 80 - 3);
-				cairo_move_to (cr, (i % 6) * 80 + 40 - 5, (i / 6 - 1) * 80 + 80 + 3);
-				cairo_line_to (cr, (i % 6) * 80 + 40 + 5, (i / 6 - 1) * 80 + 80 + 3);
+				cairo_move_to (cr, ((i % 6) * 80 + 40 - 5) * x_scale, ((i / 6 - 1) * 80 + 80 - 3) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 40 + 5) * x_scale, ((i / 6 - 1) * 80 + 80 - 3) * y_scale);
+				cairo_move_to (cr, ((i % 6) * 80 + 40 - 5) * x_scale, ((i / 6 - 1) * 80 + 80 + 3) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 40 + 5) * x_scale, ((i / 6 - 1) * 80 + 80 + 3) * y_scale);
 			} else {
-				cairo_move_to (cr, (i % 6) * 80 + 40 - 5, (i / 6 - 1) * 80 + 80 - 5);
-				cairo_line_to (cr, (i % 6) * 80 + 40 + 5, (i / 6 - 1) * 80 + 80 + 5);
-				cairo_move_to (cr, (i % 6) * 80 + 40 + 5, (i / 6 - 1) * 80 + 80 - 5);
-				cairo_line_to (cr, (i % 6) * 80 + 40 - 5, (i / 6 - 1) * 80 + 80 + 5);
+				cairo_move_to (cr, ((i % 6) * 80 + 40 - 5) * x_scale, ((i / 6 - 1) * 80 + 80 - 5) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 40 + 5) * x_scale, ((i / 6 - 1) * 80 + 80 + 5) * y_scale);
+				cairo_move_to (cr, ((i % 6) * 80 + 40 + 5) * x_scale, ((i / 6 - 1) * 80 + 80 - 5) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 40 - 5) * x_scale, ((i / 6 - 1) * 80 + 80 + 5) * y_scale);
 			}
 		}
 
@@ -1372,15 +1386,15 @@ void Board::draw_constraints ()
 			if (i % 6 == 5)
 				continue;
 			if (ref.flags.right_equal) {
-				cairo_move_to (cr, (i % 6) * 80 + 80 - 5, (i / 6) * 80 + 80 - 40 - 3);
-				cairo_line_to (cr, (i % 6) * 80 + 80 + 5, (i / 6) * 80 + 80 - 40 - 3);
-				cairo_move_to (cr, (i % 6) * 80 + 80 - 5, (i / 6) * 80 + 80 - 40 + 3);
-				cairo_line_to (cr, (i % 6) * 80 + 80 + 5, (i / 6) * 80 + 80 - 40 + 3);
+				cairo_move_to (cr, ((i % 6) * 80 + 80 - 5) * x_scale, ((i / 6) * 80 + 80 - 40 - 3) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 80 + 5) * x_scale, ((i / 6) * 80 + 80 - 40 - 3) * y_scale);
+				cairo_move_to (cr, ((i % 6) * 80 + 80 - 5) * x_scale, ((i / 6) * 80 + 80 - 40 + 3) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 80 + 5) * x_scale, ((i / 6) * 80 + 80 - 40 + 3) * y_scale);
 			} else {
-				cairo_move_to (cr, (i % 6) * 80 + 80 - 5, (i / 6) * 80 + 40 - 5);
-				cairo_line_to (cr, (i % 6) * 80 + 80 + 5, (i / 6) * 80 + 40 + 5);
-				cairo_move_to (cr, (i % 6) * 80 + 80 + 5, (i / 6) * 80 + 40 - 5);
-				cairo_line_to (cr, (i % 6) * 80 + 80 - 5, (i / 6) * 80 + 40 + 5);
+				cairo_move_to (cr, ((i % 6) * 80 + 80 - 5) * x_scale, ((i / 6) * 80 + 40 - 5) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 80 + 5) * x_scale, ((i / 6) * 80 + 40 + 5) * y_scale);
+				cairo_move_to (cr, ((i % 6) * 80 + 80 + 5) * x_scale, ((i / 6) * 80 + 40 - 5) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 80 - 5) * x_scale, ((i / 6) * 80 + 40 + 5) * y_scale);
 			}
 		}
 
@@ -1388,15 +1402,15 @@ void Board::draw_constraints ()
 			if (i > 30)
 				continue;
 			if (ref.flags.bottom_equal) {
-				cairo_move_to (cr, (i % 6) * 80 + 40 - 5, (i / 6 + 1) * 80 - 3);
-				cairo_line_to (cr, (i % 6) * 80 + 40 + 5, (i / 6 + 1) * 80 - 3);
-				cairo_move_to (cr, (i % 6) * 80 + 40 - 5, (i / 6 + 1) * 80 + 3);
-				cairo_line_to (cr, (i % 6) * 80 + 40 + 5, (i / 6 + 1) * 80 + 3);
+				cairo_move_to (cr, ((i % 6) * 80 + 40 - 5) * x_scale, ((i / 6 + 1) * 80 - 3) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 40 + 5) * x_scale, ((i / 6 + 1) * 80 - 3) * y_scale);
+				cairo_move_to (cr, ((i % 6) * 80 + 40 - 5) * x_scale, ((i / 6 + 1) * 80 + 3) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 40 + 5) * x_scale, ((i / 6 + 1) * 80 + 3) * y_scale);
 			} else {
-				cairo_move_to (cr, (i % 6) * 80 + 40 - 5, (i / 6 + 1) * 80 - 5);
-				cairo_line_to (cr, (i % 6) * 80 + 40 + 5, (i / 6 + 1) * 80 + 5);
-				cairo_move_to (cr, (i % 6) * 80 + 40 + 5, (i / 6 + 1) * 80 - 5);
-				cairo_line_to (cr, (i % 6) * 80 + 40 - 5, (i / 6 + 1) * 80 + 5);
+				cairo_move_to (cr, ((i % 6) * 80 + 40 - 5) * x_scale, ((i / 6 + 1) * 80 - 5) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 40 + 5) * x_scale, ((i / 6 + 1) * 80 + 5) * y_scale);
+				cairo_move_to (cr, ((i % 6) * 80 + 40 + 5) * x_scale, ((i / 6 + 1) * 80 - 5) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 40 - 5) * x_scale, ((i / 6 + 1) * 80 + 5) * y_scale);
 			}
 		}
 
@@ -1404,15 +1418,15 @@ void Board::draw_constraints ()
 			if (i % 6 == 0)
 				continue;
 			if (ref.flags.left_equal) {
-				cairo_move_to (cr, (i % 6) * 80 - 5, (i / 6) * 80 + 40 - 3);
-				cairo_line_to (cr, (i % 6) * 80 + 5, (i / 6) * 80 + 40 - 3);
-				cairo_move_to (cr, (i % 6) * 80 - 5, (i / 6) * 80 + 40 + 3);
-				cairo_line_to (cr, (i % 6) * 80 + 5, (i / 6) * 80 + 40 + 3);
+				cairo_move_to (cr, ((i % 6) * 80 - 5) * x_scale, ((i / 6) * 80 + 40 - 3) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 5) * x_scale, ((i / 6) * 80 + 40 - 3) * y_scale);
+				cairo_move_to (cr, ((i % 6) * 80 - 5) * x_scale, ((i / 6) * 80 + 40 + 3) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 5) * x_scale, ((i / 6) * 80 + 40 + 3) * y_scale);
 			} else {
-				cairo_move_to (cr, (i % 6) * 80 - 5, (i / 6) * 80 + 40 - 5);
-				cairo_line_to (cr, (i % 6) * 80 + 5, (i / 6) * 80 + 40 + 5);
-				cairo_move_to (cr, (i % 6) * 80 + 5, (i / 6) * 80 + 40 - 5);
-				cairo_line_to (cr, (i % 6) * 80 - 5, (i / 6) * 80 + 40 + 5);
+				cairo_move_to (cr, ((i % 6) * 80 - 5) * x_scale, ((i / 6) * 80 + 40 - 5) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 + 5) * x_scale, ((i / 6) * 80 + 40 + 5) * y_scale);
+				cairo_move_to (cr, ((i % 6) * 80 + 5) * x_scale, ((i / 6) * 80 + 40 - 5) * y_scale);
+				cairo_line_to (cr, ((i % 6) * 80 - 5) * x_scale, ((i / 6) * 80 + 40 + 5) * y_scale);
 			}
 		}
 		cairo_stroke (cr);

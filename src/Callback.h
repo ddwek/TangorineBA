@@ -44,6 +44,7 @@ public:
 	cell_region_t *get_region (int n);
 	int get_seconds () const;
 	int get_minutes () const;
+	bool get_timer_status () const;
 
 	void set_app (GtkApplication *app);
 	void set_window (GtkWindow *window);
@@ -52,6 +53,8 @@ public:
 	void set_region (int nregion, int x0, int y0, int x1, int y1);
 	void set_seconds (int seconds);
 	void set_minutes (int minutes);
+	void start_timer ();
+	void stop_timer ();
 
 private:
 	GtkApplication *app;
@@ -61,6 +64,7 @@ private:
 	cell_region_t region[36];
 	int seconds;
 	int minutes;
+	bool timer_status;
 };
 
 int on_tick_cb (GtkWidget *widget, GdkFrameClock *frame_clock, gpointer user_data);
