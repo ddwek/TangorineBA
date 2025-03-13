@@ -37,7 +37,7 @@ typedef struct region_st {
 } cell_region_t;
 
 extern class Test test;
-extern GtkWidget *da;
+extern GtkWidget *main_window, *da, *time_da;
 bool are_there_pending_events = false;
 std::list<pending_events_t> redraw_cells;
 
@@ -60,6 +60,7 @@ public:
 	cell_region_t *get_region (int n);
 	int get_seconds () const;
 	int get_minutes () const;
+	bool get_timer_status () const;
 
 	void set_app (GtkApplication *app);
 	void set_window (GtkWindow *window);
@@ -68,6 +69,8 @@ public:
 	void set_region (int nregion, int x0, int y0, int x1, int y1);
 	void set_seconds (int seconds);
 	void set_minutes (int minutes);
+	void start_timer ();
+	void stop_timer ();
 
 private:
 	GtkApplication *app;
@@ -77,6 +80,7 @@ private:
 	cell_region_t region[36];
 	int seconds;
 	int minutes;
+	bool timer_status;
 } cbdata;
 
 CallbackData::CallbackData ()
@@ -123,6 +127,11 @@ int CallbackData::get_minutes () const
 	return this->minutes;
 }
 
+bool CallbackData::get_timer_status () const
+{
+	return this->timer_status;
+}
+
 void CallbackData::set_app (GtkApplication *app)
 {
 	this->app = app;
@@ -159,6 +168,16 @@ void CallbackData::set_seconds (int seconds)
 void CallbackData::set_minutes (int minutes)
 {
 	this->minutes = minutes;
+}
+
+void CallbackData::start_timer ()
+{
+	this->timer_status = true;
+}
+
+void CallbackData::stop_timer ()
+{
+	this->timer_status = false;
 }
 
 int on_time_ticking_cb (gpointer data)
@@ -314,13 +333,16 @@ int draw_curr_time_leds (cairo_t *cr)
 	cairo_save (cr);
 	gdk_cairo_set_source_rgba (cr, &red);
 
+	double x_scale = gtk_widget_get_allocated_width (main_window) / 600.0;
+	double y_scale = gtk_widget_get_allocated_height (main_window) / 480.0;
 	for (add = 0, n = 0; n < 2; n++) {
 		for (i = 0; i < 7; i++) {
 			for (j = 0; j < 3; j++) {
 				if (!digit[ts[n] - '0'][i][j])
 					continue;
-				cairo_move_to (cr, 24 + digit[ts[n] - '0'][i][j] * j * 4 + add, 68 + digit[ts[n] - '0'][i][j] * i * 4);
-				cairo_rel_line_to (cr, 2, 0);
+				cairo_move_to (cr, (24 * x_scale + digit[ts[n] - '0'][i][j] * j * 4 + add) * x_scale,
+					       (68 + digit[ts[n] - '0'][i][j] * i * 4) * y_scale);
+				cairo_rel_line_to (cr, 2 * x_scale, 0);
 				cairo_stroke (cr);
 			}
 		}
@@ -332,8 +354,9 @@ int draw_curr_time_leds (cairo_t *cr)
 			for (j = 0; j < 3; j++) {
 				if (!digit[ts[n] - '0'][i][j])
 					continue;
-				cairo_move_to (cr, 24 + digit[ts[n] - '0'][i][j] * j * 4 + add, 68 + digit[ts[n] - '0'][i][j] * i * 4);
-				cairo_rel_line_to (cr, 2, 0);
+				cairo_move_to (cr, (24 * x_scale + digit[ts[n] - '0'][i][j] * j * 4 + add) * x_scale,
+					       (68 + digit[ts[n] - '0'][i][j] * i * 4) * y_scale);
+				cairo_rel_line_to (cr, 2 * x_scale, 0);
 				cairo_stroke (cr);
 			}
 		}
@@ -366,12 +389,15 @@ void draw_ticking_leds (cairo_t *cr)
 
 	cairo_save (cr);
 	gdk_cairo_set_source_rgba (cr, &fg);
+	double x_scale = gtk_widget_get_allocated_width (main_window) / 600.0;
+	double y_scale = gtk_widget_get_allocated_height (main_window) / 480.0;
 	for (int i = 0; i < 7; i++) {
 		for (int j = 0; j < 3; j++) {
 			if (!tick[i][j])
 				continue;
-			cairo_move_to (cr, 24 + tick[i][j] * j * 4 + 32, 68 + tick[i][j] * i * 4);
-			cairo_rel_line_to (cr, 0, 2);
+			cairo_move_to (cr, (24 * x_scale + tick[i][j] * j * 4 + 32) * x_scale,
+				       (68 + tick[i][j] * i * 4) * y_scale);
+			cairo_rel_line_to (cr, 0, 2 * y_scale);
 			cairo_stroke (cr);
 		}
 	}
@@ -388,14 +414,16 @@ int draw_timer_cb (GtkWidget *widget, cairo_t *cr, void *user_data)
 	gdk_cairo_set_source_rgba (cr, &bgcolor);
 	cairo_paint (cr);
 	gdk_cairo_set_source_rgba (cr, &black);
-	cairo_rectangle (cr, 5, 5, 110, 150);
+	cairo_rectangle (cr, 5, 5,
+			 gtk_widget_get_allocated_width (time_da) - 10,
+			 gtk_widget_get_allocated_height (time_da) - 10);
 	cairo_fill (cr);
-
 	draw_curr_time_leds (cr);
 	draw_ticking_leds (cr);
 	cairo_restore (cr);
 
-	gtk_widget_queue_draw (widget);
+	if (cbdata.get_timer_status ())
+		gtk_widget_queue_draw (widget);
 	return 0;
 }
 
@@ -432,11 +460,15 @@ void new_game_cb (GtkButton *btn)
 
 int configure_cb (GtkWidget *widget, GdkEventConfigure *event, void *data)
 {
+	double x_scale = gtk_widget_get_allocated_width (da) / 480.0;
+	double y_scale = gtk_widget_get_allocated_height (da) / 480.0;
 	for (int i = 0; i < 6; i++)
 		for (int j = 0; j < 6; j++)
-			cbdata.set_region (i * 6 + j, j * 80, i * 80, (j + 1) * 80, (i + 1) * 80);
+			cbdata.set_region (i * 6 + j, j * 80 * x_scale, i * 80 * y_scale,
+					   (j + 1) * 80 * x_scale, (i + 1) * 80 * y_scale);
 
-	g_timeout_add_seconds (1, on_time_ticking_cb, widget);
+	if (!board.is_configured ())
+		g_timeout_add_seconds (1, on_time_ticking_cb, widget);
 	return 0;
 }
 
@@ -460,8 +492,10 @@ int draw_cb (GtkWidget *widget, cairo_t *cr, void *user_data)
 			}
 		}
 
-		if (board.get_game_over ())
+		if (board.get_game_over ()) {
+			cbdata.stop_timer ();
 			board.show_congrats ();
+		}
 		are_there_pending_events = false;
 	}
 	board.draw_constraints ();
@@ -472,6 +506,7 @@ int draw_cb (GtkWidget *widget, cairo_t *cr, void *user_data)
 
 bool button_press_cb (GtkWidget *widget, GdkEventButton *event, void *user_data)
 {
+	int err, row = -1, col = -1, nsuns = -1, nmoons = -1;
 	shape_t new_guess = SHAPE_EMPTY;
 	pending_events_t pending_event;
 	std::set<int>::iterator iter;
@@ -518,7 +553,8 @@ empty_shape_erased:
 					}
 				}
 
-				if (setlist.size () == 30) {
+				err = board.is_valid (&row, &col, &nsuns, &nmoons);
+				if (setlist.size () == 30 && !err) {
 					// If we are about to end a game, we must to reset this
 					// setlist to zero amount of items because we use it as
 					// a global variable. We should do the same if we used
