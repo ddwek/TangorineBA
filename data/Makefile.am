@@ -1,13 +1,4 @@
-all: ui.gresource
+SUBDIRS = ui icons
 
-ui.gresource: ui.xml
-	glib-compile-resources --target $@ --generate $<
-
-clean-local:
-	rm -f ui.gresource
-
-distclean-local:
-	rm -f ui.gresource
-
-resdir = $(datadir)/TangorineBA/data
-res_DATA = ui.gresource
+desktopdir = $(datadir)/applications
+desktop_DATA = org.gtk.TangorineBA.desktop

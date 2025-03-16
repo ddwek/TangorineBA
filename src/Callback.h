@@ -45,6 +45,9 @@ public:
 	int get_seconds () const;
 	int get_minutes () const;
 	bool get_timer_status () const;
+	int get_uid () const;
+	int get_anim_frame () const;
+	int get_game_over_id () const;
 
 	void set_app (GtkApplication *app);
 	void set_window (GtkWindow *window);
@@ -55,6 +58,9 @@ public:
 	void set_minutes (int minutes);
 	void start_timer ();
 	void stop_timer ();
+	void set_uid (int uid);
+	void set_anim_frame (int anim_frame);
+	void set_game_over_id (int game_over_id);
 
 private:
 	GtkApplication *app;
@@ -65,13 +71,19 @@ private:
 	int seconds;
 	int minutes;
 	bool timer_status;
+	int uid;
+	int anim_frame;
+	int game_over_id;
 };
 
 int on_tick_cb (GtkWidget *widget, GdkFrameClock *frame_clock, gpointer user_data);
 int draw_timer_cb (GtkWidget *widget, cairo_t *timer_cr, gpointer data);
 void clear_game_cb (GtkButton *btn);
 void new_game_cb (GtkButton *btn);
+void undo_cb (GtkButton *btn);
+void redo_cb (GtkButton *btn);
 int configure_cb (GtkWidget *widget, GdkEventConfigure *event, void *data);
 int draw_cb (GtkWidget *widget, cairo_t *cr, gpointer data);
+int game_over_cb (GtkWidget *widget, GdkFrameClock *frame_clock, gpointer data);
 bool button_press_cb (GtkWidget *widget, GdkEventButton *button, void *data);
 #endif

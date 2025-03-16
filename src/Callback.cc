@@ -17,8 +17,6 @@
  *  along with TangorineBA.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include <iostream>
-#include <iomanip>
 #include <sstream>
 #include <string>
 #include <list>
@@ -27,6 +25,7 @@
 #include <gdk/gdk.h>
 #include "common.h"
 #include "Board.h"
+#include "Stack.h"
 #include "../test/Test.h"
 
 typedef struct region_st {
@@ -37,13 +36,17 @@ typedef struct region_st {
 } cell_region_t;
 
 extern class Test test;
-extern GtkWidget *main_window, *da, *time_da;
+extern GtkWidget *main_window, *da, *time_da, *undo_btn, *redo_btn;
 bool are_there_pending_events = false;
 std::list<pending_events_t> redraw_cells;
+class Stack undo;
+class Stack redo;
 
 // Maybe "setlist" becomes a private member of a future class Window,
 // with getters and setters handling it, but it works fine so far
 std::set<int> setlist;
+
+int game_over_cb (GtkWidget *widget, GdkFrameClock *frame_clock, gpointer data);
 
 class CallbackData {
 public:
@@ -61,6 +64,9 @@ public:
 	int get_seconds () const;
 	int get_minutes () const;
 	bool get_timer_status () const;
+	int get_uid () const;
+	int get_anim_frame () const;
+	int get_game_over_id () const;
 
 	void set_app (GtkApplication *app);
 	void set_window (GtkWindow *window);
@@ -71,6 +77,9 @@ public:
 	void set_minutes (int minutes);
 	void start_timer ();
 	void stop_timer ();
+	void set_uid (int uid);
+	void set_anim_frame (int anim_frame);
+	void set_game_over_id (int game_over_id);
 
 private:
 	GtkApplication *app;
@@ -81,12 +90,17 @@ private:
 	int seconds;
 	int minutes;
 	bool timer_status;
+	int uid;
+	int anim_frame;
+	int game_over_id; // for add_tick_cb() and remove_tick_cb()
 } cbdata;
 
 CallbackData::CallbackData ()
 {
 	seconds = 0;
 	minutes = 0;
+	uid = 1000000;
+	anim_frame = 0;
 }
 
 GtkApplication *CallbackData::get_app () const
@@ -130,6 +144,21 @@ int CallbackData::get_minutes () const
 bool CallbackData::get_timer_status () const
 {
 	return this->timer_status;
+}
+
+int CallbackData::get_uid () const
+{
+	return this->uid;
+}
+
+int CallbackData::get_anim_frame () const
+{
+	return this->anim_frame;
+}
+
+int CallbackData::get_game_over_id () const
+{
+	return this->game_over_id;
 }
 
 void CallbackData::set_app (GtkApplication *app)
@@ -178,6 +207,21 @@ void CallbackData::start_timer ()
 void CallbackData::stop_timer ()
 {
 	this->timer_status = false;
+}
+
+void CallbackData::set_uid (int uid)
+{
+	this->uid = uid;
+}
+
+void CallbackData::set_anim_frame (int anim_frame)
+{
+	this->anim_frame = anim_frame;
+}
+
+void CallbackData::set_game_over_id (int game_over_id)
+{
+	this->game_over_id = game_over_id;
 }
 
 int on_time_ticking_cb (gpointer data)
@@ -341,7 +385,7 @@ int draw_curr_time_leds (cairo_t *cr)
 				if (!digit[ts[n] - '0'][i][j])
 					continue;
 				cairo_move_to (cr, (24 * x_scale + digit[ts[n] - '0'][i][j] * j * 4 + add) * x_scale,
-					       (68 + digit[ts[n] - '0'][i][j] * i * 4) * y_scale);
+					       (88 + digit[ts[n] - '0'][i][j] * i * 4) * y_scale);
 				cairo_rel_line_to (cr, 2 * x_scale, 0);
 				cairo_stroke (cr);
 			}
@@ -355,7 +399,7 @@ int draw_curr_time_leds (cairo_t *cr)
 				if (!digit[ts[n] - '0'][i][j])
 					continue;
 				cairo_move_to (cr, (24 * x_scale + digit[ts[n] - '0'][i][j] * j * 4 + add) * x_scale,
-					       (68 + digit[ts[n] - '0'][i][j] * i * 4) * y_scale);
+					       (88 + digit[ts[n] - '0'][i][j] * i * 4) * y_scale);
 				cairo_rel_line_to (cr, 2 * x_scale, 0);
 				cairo_stroke (cr);
 			}
@@ -396,7 +440,7 @@ void draw_ticking_leds (cairo_t *cr)
 			if (!tick[i][j])
 				continue;
 			cairo_move_to (cr, (24 * x_scale + tick[i][j] * j * 4 + 32) * x_scale,
-				       (68 + tick[i][j] * i * 4) * y_scale);
+				       (88 + tick[i][j] * i * 4) * y_scale);
 			cairo_rel_line_to (cr, 0, 2 * y_scale);
 			cairo_stroke (cr);
 		}
@@ -447,6 +491,10 @@ void clear_game_cb (GtkButton *btn)
 	redraw_cells.clear ();
 	setlist.clear ();
 	are_there_pending_events = true;
+	undo.remove_downwards (0);
+	redo.remove_downwards (0);
+	gtk_widget_set_sensitive (undo_btn, false);
+	gtk_widget_set_sensitive (redo_btn, false);
 	gtk_widget_queue_draw (da);
 }
 
@@ -455,7 +503,81 @@ void new_game_cb (GtkButton *btn)
 	redraw_cells.clear ();
 	setlist.clear ();
 	are_there_pending_events = true;
+	undo.remove_downwards (0);
+	redo.remove_downwards (0);
+	gtk_widget_set_sensitive (undo_btn, false);
+	gtk_widget_set_sensitive (redo_btn, false);
 	board.new_game ();
+}
+
+void undo_cb (GtkButton *btn)
+{
+	history_t pending_event;
+	shape_t new_shape;
+	bm_flags_t new_flags;
+
+	if (!undo.get_size ()) {
+		gtk_widget_set_sensitive (undo_btn, false);
+		return;
+	}
+
+	if (undo.top().pe.shape == SHAPE_SUN)
+		new_shape = SHAPE_EMPTY;
+	else if (undo.top().pe.shape == SHAPE_MOON)
+		new_shape = SHAPE_SUN;
+	else
+		new_shape = SHAPE_MOON;
+	new_flags = undo.top().pe.flags;
+	new_flags.claim_for_hor_hatching = 0;
+	new_flags.claim_for_ver_hatching = 0;
+
+	board.set_user_guess (undo.top().pe.ncell, new_shape, new_flags);
+	pending_event.pe.ncell = undo.top().pe.ncell;
+	pending_event.pe.shape = new_shape;
+	pending_event.pe.flags = new_flags;
+	pending_event.uid = undo.top().uid;
+	redraw_cells.push_back (pending_event.pe);
+	are_there_pending_events = true;
+
+	redo.push (pending_event);
+	undo.pop ();
+	gtk_widget_set_sensitive (redo_btn, true);
+	gtk_widget_queue_draw (GTK_WIDGET (da));
+}
+
+void redo_cb (GtkButton *btn)
+{
+	history_t pending_event;
+	shape_t new_shape;
+	bm_flags_t new_flags;
+
+	if (!redo.get_size ()) {
+		gtk_widget_set_sensitive (redo_btn, false);
+		return;
+	}
+
+	if (redo.top().pe.shape == SHAPE_SUN)
+		new_shape = SHAPE_MOON;
+	else if (redo.top().pe.shape == SHAPE_MOON)
+		new_shape = SHAPE_EMPTY;
+	else
+		new_shape = SHAPE_SUN;
+	new_flags = redo.top().pe.flags;
+	new_flags.claim_for_hor_hatching = 0;
+	new_flags.claim_for_ver_hatching = 0;
+
+	board.set_user_guess (redo.top().pe.ncell, new_shape, new_flags);
+	pending_event.pe.ncell = redo.top().pe.ncell;
+	pending_event.pe.shape = new_shape;
+	pending_event.pe.flags = new_flags;
+	pending_event.uid = redo.top().uid;
+	redraw_cells.push_back (pending_event.pe);
+	are_there_pending_events = true;
+
+	undo.push (pending_event);
+	redo.pop ();
+	gtk_widget_set_sensitive (undo_btn, true);
+	gtk_widget_queue_draw (GTK_WIDGET (da));
 }
 
 int configure_cb (GtkWidget *widget, GdkEventConfigure *event, void *data)
@@ -495,8 +617,10 @@ int draw_cb (GtkWidget *widget, cairo_t *cr, void *user_data)
 		if (board.get_game_over ()) {
 			cbdata.stop_timer ();
 			board.show_congrats ();
+			are_there_pending_events = true;
+		} else {
+			are_there_pending_events = false;
 		}
-		are_there_pending_events = false;
 	}
 	board.draw_constraints ();
 	cairo_restore (cr);
@@ -504,11 +628,32 @@ int draw_cb (GtkWidget *widget, cairo_t *cr, void *user_data)
 	return 0;
 }
 
+int game_over_cb (GtkWidget *widget, GdkFrameClock *frame_clock, gpointer data)
+{
+	static bool go_down = false;
+	int anim_frame = cbdata.get_anim_frame ();
+
+	if (!go_down) {
+		anim_frame++;
+		if (anim_frame == 20)
+			go_down = true;
+	} else {
+		anim_frame--;
+		if (anim_frame == 1)
+			go_down = false;
+	}
+
+	cbdata.set_anim_frame (anim_frame);
+	gtk_widget_queue_draw (da);
+	return -1;
+}
+
 bool button_press_cb (GtkWidget *widget, GdkEventButton *event, void *user_data)
 {
 	int err, row = -1, col = -1, nsuns = -1, nmoons = -1;
 	shape_t new_guess = SHAPE_EMPTY;
 	pending_events_t pending_event;
+	history_t stk_event;
 	std::set<int>::iterator iter;
 
 	for (int i = 0; i < 36; i++) {
@@ -540,20 +685,20 @@ bool button_press_cb (GtkWidget *widget, GdkEventButton *event, void *user_data)
 			board.validate_row (i / 6);
 			board.validate_col (i % 6);
 			if (are_there_pending_events) {
-				if (board.get_user_guess (i).shape != SHAPE_EMPTY &&
-				    !board.get_user_guess (i).flags.claim_for_hor_hatching &&
-				    !board.get_user_guess (i).flags.claim_for_ver_hatching)
+				if (board.get_user_guess (i).shape != SHAPE_EMPTY)
 					setlist.insert (i);
 empty_shape_erased:
 				for (iter = setlist.begin (); iter != setlist.end (); iter++) {
-					if (board.get_user_guess (*iter).shape == SHAPE_EMPTY) {
+					if (board.get_user_guess (*iter).shape == SHAPE_EMPTY &&
+					    !board.get_user_guess (*iter).flags.claim_for_hor_hatching &&
+					    !board.get_user_guess (*iter).flags.claim_for_ver_hatching) {
 						// Caught *iter with an empty shape! Erasing...
 						setlist.erase (iter);
 						goto empty_shape_erased;
 					}
 				}
 
-				err = board.is_valid (&row, &col, &nsuns, &nmoons);
+				err = board.is_valid (&row, &col, &nsuns, &nmoons, false);
 				if (setlist.size () == 30 && !err) {
 					// If we are about to end a game, we must to reset this
 					// setlist to zero amount of items because we use it as
@@ -564,9 +709,18 @@ empty_shape_erased:
 					// keep using global vars inside callbacks...
 					setlist.clear ();
 					board.set_game_over (true);
-				} else {
-					std::cout << "setlist.size (): " << setlist.size () << std::endl;
+					cbdata.set_game_over_id (gtk_widget_add_tick_callback (GTK_WIDGET (da), game_over_cb, nullptr, nullptr));
 				}
+				stk_event.pe.ncell = i;
+				stk_event.pe.shape = board.get_user_guess (i).shape;
+				stk_event.pe.flags = board.get_user_guess (i).flags;
+				stk_event.uid = cbdata.get_uid ();
+				cbdata.set_uid (cbdata.get_uid () + 1);
+				undo.push (stk_event);
+				if (redo.get_size ())
+					redo.remove_downwards (0);
+				gtk_widget_set_sensitive (undo_btn, true);
+				gtk_widget_set_sensitive (redo_btn, false);
 				gtk_widget_queue_draw (widget);
 			}
 		}

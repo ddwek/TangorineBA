@@ -19,6 +19,7 @@
  */
 #ifndef _COMMON_H_
 #define _COMMON_H_	1
+#include <gtk/gtk.h>
 
 // Bitmask of flags for each cell
 typedef struct bm_flags_st {
@@ -58,4 +59,10 @@ typedef struct pending_events_st {
 	bm_flags_t flags;
 } pending_events_t;
 
+typedef struct history_st {
+	pending_events_t pe;
+	int uid;
+} history_t;
+
+extern GtkWidget *undo_btn, *redo_btn;
 #endif

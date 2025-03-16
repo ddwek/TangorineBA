@@ -37,6 +37,7 @@ zero_board_two_regular_cells_with_horizontal_equal_shapes_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_two_regular_cells_with_horizontal_equal_shapes.cc
 
@@ -44,6 +45,7 @@ zero_board_two_regular_cells_with_horizontal_diff_shapes_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_two_regular_cells_with_horizontal_diff_shapes.cc
 
@@ -51,6 +53,7 @@ zero_board_two_regular_cells_with_vertical_equal_shapes_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_two_regular_cells_with_vertical_equal_shapes.cc
 
@@ -58,6 +61,7 @@ zero_board_two_regular_cells_with_vertical_diff_shapes_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_two_regular_cells_with_vertical_diff_shapes.cc
 
@@ -65,6 +69,7 @@ zero_board_three_adj_horizontal_identical_cells_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_three_adj_horizontal_identical_cells.cc
 
@@ -72,6 +77,7 @@ zero_board_three_adj_horizontal_identical_through_imm_cells_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_three_adj_horizontal_identical_through_imm_cells.cc
 
@@ -79,6 +85,7 @@ zero_board_three_adj_vertical_identical_cells_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_three_adj_vertical_identical_cells.cc
 
@@ -86,6 +93,7 @@ zero_board_three_adj_vertical_identical_through_imm_cells_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_three_adj_vertical_identical_through_imm_cells.cc
 
@@ -93,6 +101,7 @@ two_regular_cells_with_horizontal_equal_shapes_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	two_regular_cells_with_horizontal_equal_shapes.cc
 
@@ -100,6 +109,7 @@ two_regular_cells_with_horizontal_diff_shapes_SOURCES = \
  	../src/Board.cc \
  	../src/Digraph.cc \
  	../src/Callback.cc \
+	../src/Stack.cc \
  	Test.cc \
  	two_regular_cells_with_horizontal_diff_shapes.cc
 
@@ -107,6 +117,7 @@ two_regular_cells_with_vertical_equal_shapes_SOURCES = \
  	../src/Board.cc \
  	../src/Digraph.cc \
  	../src/Callback.cc \
+	../src/Stack.cc \
  	Test.cc \
  	two_regular_cells_with_vertical_equal_shapes.cc
 
@@ -114,5 +125,6 @@ two_regular_cells_with_vertical_diff_shapes_SOURCES = \
  	../src/Board.cc \
  	../src/Digraph.cc \
  	../src/Callback.cc \
+	../src/Stack.cc \
  	Test.cc \
  	two_regular_cells_with_vertical_diff_shapes.cc

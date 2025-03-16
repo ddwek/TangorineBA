@@ -121,84 +121,96 @@ CONFIG_CLEAN_VPATH_FILES =
 am__dirstamp = $(am__leading_dot)dirstamp
 am_two_regular_cells_with_horizontal_diff_shapes_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	two_regular_cells_with_horizontal_diff_shapes.$(OBJEXT)
 two_regular_cells_with_horizontal_diff_shapes_OBJECTS =  \
 	$(am_two_regular_cells_with_horizontal_diff_shapes_OBJECTS)
 two_regular_cells_with_horizontal_diff_shapes_LDADD = $(LDADD)
 am_two_regular_cells_with_horizontal_equal_shapes_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	two_regular_cells_with_horizontal_equal_shapes.$(OBJEXT)
 two_regular_cells_with_horizontal_equal_shapes_OBJECTS =  \
 	$(am_two_regular_cells_with_horizontal_equal_shapes_OBJECTS)
 two_regular_cells_with_horizontal_equal_shapes_LDADD = $(LDADD)
 am_two_regular_cells_with_vertical_diff_shapes_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	two_regular_cells_with_vertical_diff_shapes.$(OBJEXT)
 two_regular_cells_with_vertical_diff_shapes_OBJECTS =  \
 	$(am_two_regular_cells_with_vertical_diff_shapes_OBJECTS)
 two_regular_cells_with_vertical_diff_shapes_LDADD = $(LDADD)
 am_two_regular_cells_with_vertical_equal_shapes_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	two_regular_cells_with_vertical_equal_shapes.$(OBJEXT)
 two_regular_cells_with_vertical_equal_shapes_OBJECTS =  \
 	$(am_two_regular_cells_with_vertical_equal_shapes_OBJECTS)
 two_regular_cells_with_vertical_equal_shapes_LDADD = $(LDADD)
 am_zero_board_three_adj_horizontal_identical_cells_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	zero_board_three_adj_horizontal_identical_cells.$(OBJEXT)
 zero_board_three_adj_horizontal_identical_cells_OBJECTS =  \
 	$(am_zero_board_three_adj_horizontal_identical_cells_OBJECTS)
 zero_board_three_adj_horizontal_identical_cells_LDADD = $(LDADD)
 am_zero_board_three_adj_horizontal_identical_through_imm_cells_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	zero_board_three_adj_horizontal_identical_through_imm_cells.$(OBJEXT)
 zero_board_three_adj_horizontal_identical_through_imm_cells_OBJECTS = $(am_zero_board_three_adj_horizontal_identical_through_imm_cells_OBJECTS)
 zero_board_three_adj_horizontal_identical_through_imm_cells_LDADD =  \
 	$(LDADD)
 am_zero_board_three_adj_vertical_identical_cells_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	zero_board_three_adj_vertical_identical_cells.$(OBJEXT)
 zero_board_three_adj_vertical_identical_cells_OBJECTS =  \
 	$(am_zero_board_three_adj_vertical_identical_cells_OBJECTS)
 zero_board_three_adj_vertical_identical_cells_LDADD = $(LDADD)
 am_zero_board_three_adj_vertical_identical_through_imm_cells_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	zero_board_three_adj_vertical_identical_through_imm_cells.$(OBJEXT)
 zero_board_three_adj_vertical_identical_through_imm_cells_OBJECTS = $(am_zero_board_three_adj_vertical_identical_through_imm_cells_OBJECTS)
 zero_board_three_adj_vertical_identical_through_imm_cells_LDADD =  \
 	$(LDADD)
 am_zero_board_two_regular_cells_with_horizontal_diff_shapes_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	zero_board_two_regular_cells_with_horizontal_diff_shapes.$(OBJEXT)
 zero_board_two_regular_cells_with_horizontal_diff_shapes_OBJECTS = $(am_zero_board_two_regular_cells_with_horizontal_diff_shapes_OBJECTS)
 zero_board_two_regular_cells_with_horizontal_diff_shapes_LDADD =  \
 	$(LDADD)
 am_zero_board_two_regular_cells_with_horizontal_equal_shapes_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	zero_board_two_regular_cells_with_horizontal_equal_shapes.$(OBJEXT)
 zero_board_two_regular_cells_with_horizontal_equal_shapes_OBJECTS = $(am_zero_board_two_regular_cells_with_horizontal_equal_shapes_OBJECTS)
 zero_board_two_regular_cells_with_horizontal_equal_shapes_LDADD =  \
 	$(LDADD)
 am_zero_board_two_regular_cells_with_vertical_diff_shapes_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	zero_board_two_regular_cells_with_vertical_diff_shapes.$(OBJEXT)
 zero_board_two_regular_cells_with_vertical_diff_shapes_OBJECTS = $(am_zero_board_two_regular_cells_with_vertical_diff_shapes_OBJECTS)
 zero_board_two_regular_cells_with_vertical_diff_shapes_LDADD =  \
 	$(LDADD)
 am_zero_board_two_regular_cells_with_vertical_equal_shapes_OBJECTS =  \
 	../src/Board.$(OBJEXT) ../src/Digraph.$(OBJEXT) \
-	../src/Callback.$(OBJEXT) Test.$(OBJEXT) \
+	../src/Callback.$(OBJEXT) ../src/Stack.$(OBJEXT) \
+	Test.$(OBJEXT) \
 	zero_board_two_regular_cells_with_vertical_equal_shapes.$(OBJEXT)
 zero_board_two_regular_cells_with_vertical_equal_shapes_OBJECTS = $(am_zero_board_two_regular_cells_with_vertical_equal_shapes_OBJECTS)
 zero_board_two_regular_cells_with_vertical_equal_shapes_LDADD =  \
@@ -220,7 +232,7 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ../src/$(DEPDIR)/Board.Po \
 	../src/$(DEPDIR)/Callback.Po ../src/$(DEPDIR)/Digraph.Po \
-	./$(DEPDIR)/Test.Po \
+	../src/$(DEPDIR)/Stack.Po ./$(DEPDIR)/Test.Po \
 	./$(DEPDIR)/two_regular_cells_with_horizontal_diff_shapes.Po \
 	./$(DEPDIR)/two_regular_cells_with_horizontal_equal_shapes.Po \
 	./$(DEPDIR)/two_regular_cells_with_vertical_diff_shapes.Po \
@@ -606,6 +618,7 @@ zero_board_two_regular_cells_with_horizontal_equal_shapes_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_two_regular_cells_with_horizontal_equal_shapes.cc
 
@@ -613,6 +626,7 @@ zero_board_two_regular_cells_with_horizontal_diff_shapes_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_two_regular_cells_with_horizontal_diff_shapes.cc
 
@@ -620,6 +634,7 @@ zero_board_two_regular_cells_with_vertical_equal_shapes_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_two_regular_cells_with_vertical_equal_shapes.cc
 
@@ -627,6 +642,7 @@ zero_board_two_regular_cells_with_vertical_diff_shapes_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_two_regular_cells_with_vertical_diff_shapes.cc
 
@@ -634,6 +650,7 @@ zero_board_three_adj_horizontal_identical_cells_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_three_adj_horizontal_identical_cells.cc
 
@@ -641,6 +658,7 @@ zero_board_three_adj_horizontal_identical_through_imm_cells_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_three_adj_horizontal_identical_through_imm_cells.cc
 
@@ -648,6 +666,7 @@ zero_board_three_adj_vertical_identical_cells_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_three_adj_vertical_identical_cells.cc
 
@@ -655,6 +674,7 @@ zero_board_three_adj_vertical_identical_through_imm_cells_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	zero_board_three_adj_vertical_identical_through_imm_cells.cc
 
@@ -662,6 +682,7 @@ two_regular_cells_with_horizontal_equal_shapes_SOURCES = \
 	../src/Board.cc \
 	../src/Digraph.cc \
 	../src/Callback.cc \
+	../src/Stack.cc \
 	Test.cc \
 	two_regular_cells_with_horizontal_equal_shapes.cc
 
@@ -669,6 +690,7 @@ two_regular_cells_with_horizontal_diff_shapes_SOURCES = \
  	../src/Board.cc \
  	../src/Digraph.cc \
  	../src/Callback.cc \
+	../src/Stack.cc \
  	Test.cc \
  	two_regular_cells_with_horizontal_diff_shapes.cc
 
@@ -676,6 +698,7 @@ two_regular_cells_with_vertical_equal_shapes_SOURCES = \
  	../src/Board.cc \
  	../src/Digraph.cc \
  	../src/Callback.cc \
+	../src/Stack.cc \
  	Test.cc \
  	two_regular_cells_with_vertical_equal_shapes.cc
 
@@ -683,6 +706,7 @@ two_regular_cells_with_vertical_diff_shapes_SOURCES = \
  	../src/Board.cc \
  	../src/Digraph.cc \
  	../src/Callback.cc \
+	../src/Stack.cc \
  	Test.cc \
  	two_regular_cells_with_vertical_diff_shapes.cc
 
@@ -733,6 +757,8 @@ clean-checkPROGRAMS:
 ../src/Digraph.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/Callback.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
+../src/Stack.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 
 two_regular_cells_with_horizontal_diff_shapes$(EXEEXT): $(two_regular_cells_with_horizontal_diff_shapes_OBJECTS) $(two_regular_cells_with_horizontal_diff_shapes_DEPENDENCIES) $(EXTRA_two_regular_cells_with_horizontal_diff_shapes_DEPENDENCIES) 
@@ -793,6 +819,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Board.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Callback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Digraph.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Stack.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Test.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/two_regular_cells_with_horizontal_diff_shapes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/two_regular_cells_with_horizontal_equal_shapes.Po@am__quote@ # am--include-marker
@@ -1202,6 +1229,7 @@ distclean: distclean-am
 		-rm -f ../src/$(DEPDIR)/Board.Po
 	-rm -f ../src/$(DEPDIR)/Callback.Po
 	-rm -f ../src/$(DEPDIR)/Digraph.Po
+	-rm -f ../src/$(DEPDIR)/Stack.Po
 	-rm -f ./$(DEPDIR)/Test.Po
 	-rm -f ./$(DEPDIR)/two_regular_cells_with_horizontal_diff_shapes.Po
 	-rm -f ./$(DEPDIR)/two_regular_cells_with_horizontal_equal_shapes.Po
@@ -1263,6 +1291,7 @@ maintainer-clean: maintainer-clean-am
 		-rm -f ../src/$(DEPDIR)/Board.Po
 	-rm -f ../src/$(DEPDIR)/Callback.Po
 	-rm -f ../src/$(DEPDIR)/Digraph.Po
+	-rm -f ../src/$(DEPDIR)/Stack.Po
 	-rm -f ./$(DEPDIR)/Test.Po
 	-rm -f ./$(DEPDIR)/two_regular_cells_with_horizontal_diff_shapes.Po
 	-rm -f ./$(DEPDIR)/two_regular_cells_with_horizontal_equal_shapes.Po
