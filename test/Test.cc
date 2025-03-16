@@ -386,3 +386,4 @@ int Test::pass (int n_step)
 out:
 	return ret;
 }
+#include "../src/Stack.h"

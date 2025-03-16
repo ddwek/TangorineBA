@@ -118,7 +118,7 @@ int configure_testing_cb (GtkWidget *widget, GdkEventConfigure *event, void *dat
 	return 0;
 }
 
-GtkWidget *main_window, *da, *time_da;
+GtkWidget *main_window, *da, *time_da, *undo_btn, *redo_btn;
 
 void activate (GtkApplication *app, void *data)
 {

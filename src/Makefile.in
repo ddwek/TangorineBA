@@ -100,7 +100,8 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_TangorineBA_OBJECTS = Board.$(OBJEXT) Digraph.$(OBJEXT) \
-	Callback.$(OBJEXT) ../test/Test.$(OBJEXT) main.$(OBJEXT)
+	Callback.$(OBJEXT) Stack.$(OBJEXT) ../test/Test.$(OBJEXT) \
+	main.$(OBJEXT)
 TangorineBA_OBJECTS = $(am_TangorineBA_OBJECTS)
 TangorineBA_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -120,7 +121,7 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ../test/$(DEPDIR)/Test.Po ./$(DEPDIR)/Board.Po \
 	./$(DEPDIR)/Callback.Po ./$(DEPDIR)/Digraph.Po \
-	./$(DEPDIR)/main.Po
+	./$(DEPDIR)/Stack.Po ./$(DEPDIR)/main.Po
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -265,6 +266,7 @@ TangorineBA_SOURCES = \
 		Board.cc \
 		Digraph.cc \
 		Callback.cc \
+		Stack.cc \
 		../test/Test.cc \
 		main.cc
 
@@ -367,6 +369,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Board.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Callback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Digraph.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Stack.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -523,6 +526,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/Board.Po
 	-rm -f ./$(DEPDIR)/Callback.Po
 	-rm -f ./$(DEPDIR)/Digraph.Po
+	-rm -f ./$(DEPDIR)/Stack.Po
 	-rm -f ./$(DEPDIR)/main.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -573,6 +577,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/Board.Po
 	-rm -f ./$(DEPDIR)/Callback.Po
 	-rm -f ./$(DEPDIR)/Digraph.Po
+	-rm -f ./$(DEPDIR)/Stack.Po
 	-rm -f ./$(DEPDIR)/main.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

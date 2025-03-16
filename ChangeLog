@@ -1,3 +1,19 @@
+2025-03-16  Daniel Dwek  <dwekdaniel@gmail.com>
+
+	0.4.0 Release
+	* Added undo/redo history at src/Callback.cc. They're like wrappers
+	  for the "stack" C++ template, but specialized for handling our
+	  stacks, including the complete downwards data clearing whether
+	  the top of the history is in the middle of the stack.
+	* Fixed setlist.insert() at src/Callback.cc (button_press_cb ()).
+	* Added a cairo animation to celebrate when you win. It's not a
+	  GIF, just cairo API.
+	* Added .desktop file and all-size icons to copy to your system
+	  when installing the game.
+	* Now you can see how you should see the final installation of the
+	  game by comparing it to the new screenshot, which is located at
+	  the top-level of the source (the same dir as ChangeLog lives in).
+
 2025-03-13  Daniel Dwek  <dwekdaniel@gmail.com>
 
 	0.3.2 Release

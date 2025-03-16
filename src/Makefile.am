@@ -10,6 +10,7 @@ TangorineBA_SOURCES = \
 		Board.cc \
 		Digraph.cc \
 		Callback.cc \
+		Stack.cc \
 		../test/Test.cc \
 		main.cc
 

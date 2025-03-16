@@ -67,12 +67,12 @@ public:
 	shape_info_t get_standard_solution (int ncell) const;
 	void set_shape_status (int ncell, shape_t sh);
 	void set_user_guess (int ncell, shape_t sh, bm_flags_t flags);
-	int get_num_hsuns (int row);
-	int get_num_vsuns (int col);
-	int get_num_hmoons (int row);
-	int get_num_vmoons (int col);
-	int get_third_adjacent (int row, int col, line_type_check check);
-	int is_valid (int *row, int *col, int *nsuns, int *nmoons);
+	int get_num_hsuns (int row, bool std);
+	int get_num_vsuns (int col, bool std);
+	int get_num_hmoons (int row, bool std);
+	int get_num_vmoons (int col, bool std);
+	int get_third_adjacent (int row, int col, line_type_check check, bool std);
+	int is_valid (int *row, int *col, int *nsuns, int *nmoons, bool std);
 
 	void validate_row_three_adjs (int nrow);
 	void validate_row_diff_num_of_shapes (int nrow);
@@ -96,6 +96,7 @@ public:
 	void draw_constraints ();
 	bool is_configured () const;
 	bool is_testing () const;
+
 private:
 	cairo_t *cr;
 	shape_info_t standard_solution[6][6];

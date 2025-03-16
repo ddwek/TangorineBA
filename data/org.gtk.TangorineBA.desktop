@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=TangorineBA
+Comment=Place suns and moons according to the rules of the game to complete the board
+TryExec=TangorineBA
+Exec=TangorineBA
+StartupNotify=true
+Terminal=false
+Type=Application
+Icon=TangorineBA
+Categories=GTK;Game;2DGraphics
+X-Desktop-File-Install-Version=0.26

@@ -23,6 +23,7 @@
 
 GtkWidget *main_window, *da, *time_da;
 GtkWidget *new_game_btn, *clear_game_btn;
+GtkWidget *undo_btn, *redo_btn;
 Board board;
 
 void activate (GtkApplication *app, void *data)
@@ -43,6 +44,10 @@ void activate (GtkApplication *app, void *data)
 	time_da = GTK_WIDGET (gtk_builder_get_object (builder, "time_da"));
 	new_game_btn = GTK_WIDGET (gtk_builder_get_object (builder, "new_game_btn"));
 	clear_game_btn = GTK_WIDGET (gtk_builder_get_object (builder, "clear_game_btn"));
+	undo_btn = GTK_WIDGET (gtk_builder_get_object (builder, "undo_btn"));
+	redo_btn = GTK_WIDGET (gtk_builder_get_object (builder, "redo_btn"));
+	gtk_widget_set_sensitive (undo_btn, false);
+	gtk_widget_set_sensitive (redo_btn, false);
 
 	g_signal_connect (main_window, "destroy", G_CALLBACK (gtk_widget_destroy), main_window);
 	g_signal_connect (da, "configure-event", G_CALLBACK (configure_cb), nullptr);
@@ -52,6 +57,8 @@ void activate (GtkApplication *app, void *data)
 	g_signal_connect (time_da, "draw", G_CALLBACK (draw_timer_cb), nullptr);
 	g_signal_connect (new_game_btn, "clicked", G_CALLBACK (new_game_cb), nullptr);
 	g_signal_connect (clear_game_btn, "clicked", G_CALLBACK (clear_game_cb), nullptr);
+	g_signal_connect (undo_btn, "clicked", G_CALLBACK (undo_cb), nullptr);
+	g_signal_connect (redo_btn, "clicked", G_CALLBACK (redo_cb), nullptr);
 
 	gtk_widget_show_all (GTK_WIDGET (main_window));
 }

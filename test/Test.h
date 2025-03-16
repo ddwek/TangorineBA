@@ -22,6 +22,7 @@
 #include <string>
 #include <gtk/gtk.h>
 #include "../src/common.h"
+#include "../src/Stack.h"
 
 typedef struct expected_st {
 	int n_step;

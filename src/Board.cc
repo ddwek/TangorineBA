@@ -85,12 +85,12 @@ public:
 	shape_info_t get_standard_solution (int ncell) const;
 	void set_shape_status (int ncell, shape_t sh);
 	void set_user_guess (int ncell, shape_t sh, bm_flags_t flags);
-	int get_num_hsuns (int row);
-	int get_num_vsuns (int col);
-	int get_num_hmoons (int row);
-	int get_num_vmoons (int col);
-	int get_third_adjacent (int row, int col, line_type_check check);
-	int is_valid (int *row, int *col, int *nsuns, int *nmoons);
+	int get_num_hsuns (int row, bool std);
+	int get_num_vsuns (int col, bool std);
+	int get_num_hmoons (int row, bool std);
+	int get_num_vmoons (int col, bool std);
+	int get_third_adjacent (int row, int col, line_type_check check, bool std);
+	int is_valid (int *row, int *col, int *nsuns, int *nmoons, bool std);
 
 	void validate_row_three_adjs (int nrow);
 	void validate_row_diff_num_of_shapes (int nrow);
@@ -114,6 +114,7 @@ public:
 	void draw_constraints ();
 	bool is_configured () const;
 	bool is_testing () const;
+
 private:
 	cairo_t *cr;
 	shape_info_t standard_solution[6][6];
@@ -126,6 +127,8 @@ private:
 	std::string debug[0x40][6][6];
 	bool game_over;
 };
+
+extern class Board board;
 
 // Default constructor for interactive gameplay (i.e., not for testing)
 Board::Board ()
@@ -220,6 +223,7 @@ void Board::new_game ()
 	cbdata.start_timer ();
 	gtk_widget_queue_draw (da);
 	gtk_widget_queue_draw (time_da);
+	gtk_widget_remove_tick_callback (da, cbdata.get_game_over_id ());
 }
 
 void Board::set_seed (int seed)
@@ -381,7 +385,7 @@ void Board::set_game_over (bool game_over)
 	int i, j, row = -1, col = -1, nsuns = -1, nmoons = -1;
 	int err_invalid = 0, hatchings_to_change = 0;
 
-	err_invalid = is_valid (&row, &col, &nsuns, &nmoons);
+	err_invalid = is_valid (&row, &col, &nsuns, &nmoons, false);
 	for (i = 0; i < 6; i++)
 		for (j = 0; j < 6; j++)
 			if (user_guess[i][j].flags.claim_for_hor_hatching ||
@@ -407,9 +411,9 @@ void Board::show_congrats ()
 
 	cairo_save (cr);
 	gdk_cairo_set_source_rgba (cr, &fgcolor);
-	cairo_move_to (cr, 140 * x_scale, 250 * y_scale);
-	cairo_scale (cr, 4.0 * x_scale, 4.0 * y_scale);
 	cairo_select_font_face (cr, "cairo:monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+	cairo_translate (cr, 140 * x_scale, 280 * y_scale);
+	cairo_scale (cr, 4.0 * x_scale, 4.0 * y_scale * cbdata.get_anim_frame () / 6.0);
 	cairo_show_text (cr, "You won!!!");
 	cairo_restore (cr);
 }
@@ -462,103 +466,165 @@ void Board::set_user_guess (int ncell, shape_t sh, bm_flags_t flags)
 	user_guess[ncell / 6][ncell % 6].flags = flags;
 }
 
-int Board::get_num_hsuns (int row)
+int Board::get_num_hsuns (int row, bool std)
 {
 	int num_suns = 0;
 
-	for (int i = 0; i < 6; i++)
-		if (standard_solution[row][i].shape == SHAPE_SUN)
-			num_suns++;
+	for (int i = 0; i < 6; i++) {
+		if (std) {
+			shape_info_t& ref = standard_solution[row][i];
+			if (ref.shape == SHAPE_SUN)
+				num_suns++;
+		} else {
+			shape_info_t& ref = user_guess[row][i];
+			if (ref.shape == SHAPE_SUN)
+				num_suns++;
+		}
+	}
 
 	return num_suns;
 }
 
-int Board::get_num_vsuns (int col)
+int Board::get_num_vsuns (int col, bool std)
 {
 	int num_suns = 0;
 
-	for (int i = 0; i < 6; i++)
-		if (standard_solution[i][col].shape == SHAPE_SUN)
-			num_suns++;
+	for (int i = 0; i < 6; i++) {
+		if (std) {
+			shape_info_t& ref = standard_solution[i][col];
+			if (ref.shape == SHAPE_SUN)
+				num_suns++;
+		} else {
+			shape_info_t& ref = user_guess[i][col];
+			if (ref.shape == SHAPE_SUN)
+				num_suns++;
+		}
+	}
 
 	return num_suns;
 }
 
-int Board::get_num_hmoons (int row)
+int Board::get_num_hmoons (int row, bool std)
 {
 	int num_moons = 0;
 
-	for (int i = 0; i < 6; i++)
-		if (standard_solution[row][i].shape == SHAPE_MOON)
-			num_moons++;
+	for (int i = 0; i < 6; i++) {
+		if (std) {
+			shape_info_t& ref = standard_solution[row][i];
+			if (ref.shape == SHAPE_MOON)
+				num_moons++;
+		} else {
+			shape_info_t& ref = user_guess[row][i];
+			if (ref.shape == SHAPE_MOON)
+				num_moons++;
+		}
+	}
 
 	return num_moons;
 }
 
-int Board::get_num_vmoons (int col)
+int Board::get_num_vmoons (int col, bool std)
 {
 	int num_moons = 0;
 
-	for (int i = 0; i < 6; i++)
-		if (standard_solution[i][col].shape == SHAPE_MOON)
-			num_moons++;
+	for (int i = 0; i < 6; i++) {
+		if (std) {
+			shape_info_t& ref = standard_solution[i][col];
+			if (ref.shape == SHAPE_MOON)
+				num_moons++;
+		} else {
+			shape_info_t& ref = user_guess[i][col];
+			if (ref.shape == SHAPE_MOON)
+				num_moons++;
+		}
+	}
 
 	return num_moons;
 }
 
-int Board::get_third_adjacent (int row, int col, line_type_check check)
+int Board::get_third_adjacent (int row, int col, line_type_check check, bool std)
 {
 	int i, adj = 0;
 
 	if (check == ROW) {
 		for (i = 0; i < 4; i++) {
-			if (standard_solution[row][i].shape == standard_solution[row][i + 1].shape)
-				adj = 2;
-			else
-				adj = 0;
-			if (adj == 2 && standard_solution[row][i + 1].shape == standard_solution[row][i + 2].shape)
-				return i + 2;
+			if (std) {
+				shape_info_t& ref = standard_solution[row][i + 0];
+				shape_info_t& nxt = standard_solution[row][i + 1];
+				shape_info_t& pst = standard_solution[row][i + 2];
+				if (ref.shape == nxt.shape)
+					adj = 2;
+				else
+					adj = 0;
+				if (adj == 2 && nxt.shape == pst.shape)
+					return i + 2;
+			} else {
+				shape_info_t& ref = user_guess[row][i + 0];
+				shape_info_t& nxt = user_guess[row][i + 1];
+				shape_info_t& pst = user_guess[row][i + 2];
+				if (ref.shape == nxt.shape)
+					adj = 2;
+				else
+					adj = 0;
+				if (adj == 2 && nxt.shape == pst.shape)
+					return i + 2;
+			}
 		}
 	} else {
 		for (i = 0; i < 4; i++) {
-			if (standard_solution[i][col].shape == standard_solution[i + 1][col].shape)
-				adj = 2;
-			else
-				adj = 0;
-			if (adj == 2 && standard_solution[i + 1][col].shape == standard_solution[i + 2][col].shape)
-				return i + 2;
+			if (std) {
+				shape_info_t& ref = standard_solution[i + 0][col];
+				shape_info_t& nxt = standard_solution[i + 1][col];
+				shape_info_t& pst = standard_solution[i + 2][col];
+				if (ref.shape == nxt.shape)
+					adj = 2;
+				else
+					adj = 0;
+				if (adj == 2 && nxt.shape == pst.shape)
+					return i + 2;
+			} else {
+				shape_info_t& ref = user_guess[i + 0][col];
+				shape_info_t& nxt = user_guess[i + 1][col];
+				shape_info_t& pst = user_guess[i + 2][col];
+				if (ref.shape == nxt.shape)
+					adj = 2;
+				else
+					adj = 0;
+				if (adj == 2 && nxt.shape == pst.shape)
+					return i + 2;
+			}
 		}
 	}
 
 	return -1;
 }
 
-int Board::is_valid (int *row, int *col, int *nsuns, int *nmoons)
+int Board::is_valid (int *row, int *col, int *nsuns, int *nmoons, bool std)
 {
 	int i, j, ret = 0;
 
 	for (i = 0; i < 6; i++) {
-		j = get_third_adjacent (-1, i, COL);
+		j = get_third_adjacent (-1, i, COL, std);
 		if (j != -1) {
 			*col = i;
 			ret |= 1;
 		}
-		if (get_num_hsuns (i) != get_num_hmoons (i)) {
-			*nsuns = get_num_hsuns (i);
-			*nmoons = get_num_hmoons (i);
+		if (get_num_hsuns (i, std) != get_num_hmoons (i, std)) {
+			*nsuns = get_num_hsuns (i, std);
+			*nmoons = get_num_hmoons (i, std);
 			ret |= 2;
 		}
 	}
 
 	for (i = 0; i < 6; i++) {
-		j = get_third_adjacent (i, -1, ROW);
+		j = get_third_adjacent (i, -1, ROW, std);
 		if (j != -1) {
 			*row = i;
 			ret |= 4;
 		}
-		if (get_num_vsuns (i) != get_num_vmoons (i)) {
-			*nsuns = get_num_vsuns (i);
-			*nmoons = get_num_vmoons (i);
+		if (get_num_vsuns (i, std) != get_num_vmoons (i, std)) {
+			*nsuns = get_num_vsuns (i, std);
+			*nmoons = get_num_vmoons (i, std);
 			ret |= 8;
 		}
 	}
@@ -615,8 +681,8 @@ void Board::validate_row_three_adjs (int nrow)
 			set_hatching (nrow * 6 + i + 2, true);
 			i += 2;
 		} else {
-			if (get_num_hsuns (nrow) + get_num_hmoons (nrow) == 6 &&
-			    get_num_hsuns (nrow) != get_num_hmoons (nrow)) {
+			if (get_num_hsuns (nrow, true) + get_num_hmoons (nrow, true) == 6 &&
+			    get_num_hsuns (nrow, true) != get_num_hmoons (nrow, true)) {
 				clear_hatching (nrow * 6 + i + 0, true);
 				clear_hatching (nrow * 6 + i + 1, true);
 				clear_hatching (nrow * 6 + i + 2, true);
@@ -645,8 +711,8 @@ void Board::validate_row_constraints (int nrow)
 					set_hatching (nrow * 6 + i + 0, true);
 					set_hatching (nrow * 6 + i + 1, true);
 				} else {
-					if (get_num_hsuns (nrow) + get_num_hmoons (nrow) == 6 &&
-					    get_num_hsuns (nrow) != get_num_hmoons (nrow)) {
+					if (get_num_hsuns (nrow, true) + get_num_hmoons (nrow, true) == 6 &&
+					    get_num_hsuns (nrow, true) != get_num_hmoons (nrow, true)) {
 						clear_hatching (nrow * 6 + i + 0, true);
 						clear_hatching (nrow * 6 + i + 1, true);
 					}
@@ -656,8 +722,8 @@ void Board::validate_row_constraints (int nrow)
 					set_hatching (nrow * 6 + i + 0, true);
 					set_hatching (nrow * 6 + i + 1, true);
 				} else {
-					if (get_num_hsuns (nrow) + get_num_hmoons (nrow) == 6 &&
-					    get_num_hsuns (nrow) != get_num_hmoons (nrow)) {
+					if (get_num_hsuns (nrow, true) + get_num_hmoons (nrow, true) == 6 &&
+					    get_num_hsuns (nrow, true) != get_num_hmoons (nrow, true)) {
 						clear_hatching (nrow * 6 + i + 0, true);
 						clear_hatching (nrow * 6 + i + 1, true);
 					}
@@ -675,8 +741,8 @@ void Board::validate_row_constraints (int nrow)
 					set_hatching (nrow * 6 + i - 0, true);
 					set_hatching (nrow * 6 + i - 1, true);
 				} else {
-					if (get_num_hsuns (nrow) + get_num_hmoons (nrow) == 6 &&
-					    get_num_hsuns (nrow) != get_num_hmoons (nrow)) {
+					if (get_num_hsuns (nrow, true) + get_num_hmoons (nrow, true) == 6 &&
+					    get_num_hsuns (nrow, true) != get_num_hmoons (nrow, true)) {
 						clear_hatching (nrow * 6 + i - 0, true);
 						clear_hatching (nrow * 6 + i - 1, true);
 					}
@@ -686,8 +752,8 @@ void Board::validate_row_constraints (int nrow)
 					set_hatching (nrow * 6 + i - 0, true);
 					set_hatching (nrow * 6 + i - 1, true);
 				} else {
-					if (get_num_hsuns (nrow) + get_num_hmoons (nrow) == 6 &&
-					    get_num_hsuns (nrow) != get_num_hmoons (nrow)) {
+					if (get_num_hsuns (nrow, true) + get_num_hmoons (nrow, true) == 6 &&
+					    get_num_hsuns (nrow, true) != get_num_hmoons (nrow, true)) {
 						clear_hatching (nrow * 6 + i - 0, true);
 						clear_hatching (nrow * 6 + i - 1, true);
 					}
@@ -752,8 +818,8 @@ void Board::validate_col_three_adjs (int ncol)
 			set_hatching ((i + 2) * 6 + ncol, false);
 			i += 2;
 		} else {
-			if (get_num_vsuns (ncol) + get_num_vmoons (ncol) == 6 &&
-			    get_num_vsuns (ncol) != get_num_vmoons (ncol)) {
+			if (get_num_vsuns (ncol, true) + get_num_vmoons (ncol, true) == 6 &&
+			    get_num_vsuns (ncol, true) != get_num_vmoons (ncol, true)) {
 				clear_hatching ((i + 0) * 6 + ncol, false);
 				clear_hatching ((i + 1) * 6 + ncol, false);
 				clear_hatching ((i + 2) * 6 + ncol, false);
@@ -775,8 +841,8 @@ void Board::validate_col_constraints (int ncol)
 					set_hatching ((i - 0) * 6 + ncol, false);
 					set_hatching ((i - 1) * 6 + ncol, false);
 				} else {
-					if (get_num_vsuns (ncol) + get_num_vmoons (ncol) == 6 &&
-					    get_num_vsuns (ncol) != get_num_vmoons (ncol)) {
+					if (get_num_vsuns (ncol, true) + get_num_vmoons (ncol, true) == 6 &&
+					    get_num_vsuns (ncol, true) != get_num_vmoons (ncol, true)) {
 						clear_hatching ((i - 0) * 6 + ncol, false);
 						clear_hatching ((i - 1) * 6 + ncol, false);
 					}
@@ -786,8 +852,8 @@ void Board::validate_col_constraints (int ncol)
 					set_hatching ((i - 0) * 6 + ncol, false);
 					set_hatching ((i - 1) * 6 + ncol, false);
 				} else {
-					if (get_num_vsuns (ncol) + get_num_vmoons (ncol) == 6 &&
-					    get_num_vsuns (ncol) != get_num_vmoons (ncol)) {
+					if (get_num_vsuns (ncol, true) + get_num_vmoons (ncol, true) == 6 &&
+					    get_num_vsuns (ncol, true) != get_num_vmoons (ncol, true)) {
 						clear_hatching ((i - 0) * 6 + ncol, false);
 						clear_hatching ((i - 1) * 6 + ncol, false);
 					}
@@ -805,8 +871,8 @@ void Board::validate_col_constraints (int ncol)
 					set_hatching ((i + 0) * 6 + ncol, false);
 					set_hatching ((i + 1) * 6 + ncol, false);
 				} else {
-					if (get_num_vsuns (ncol) + get_num_vmoons (ncol) == 6 &&
-					    get_num_vsuns (ncol) != get_num_vmoons (ncol)) {
+					if (get_num_vsuns (ncol, true) + get_num_vmoons (ncol, true) == 6 &&
+					    get_num_vsuns (ncol, true) != get_num_vmoons (ncol, true)) {
 						clear_hatching ((i + 0) * 6 + ncol, false);
 						clear_hatching ((i + 1) * 6 + ncol, false);
 					}
@@ -816,8 +882,8 @@ void Board::validate_col_constraints (int ncol)
 					set_hatching ((i + 0) * 6 + ncol, false);
 					set_hatching ((i + 1) * 6 + ncol, false);
 				} else {
-					if (get_num_vsuns (ncol) + get_num_vmoons (ncol) == 6 &&
-					    get_num_vsuns (ncol) != get_num_vmoons (ncol)) {
+					if (get_num_vsuns (ncol, true) + get_num_vmoons (ncol, true) == 6 &&
+					    get_num_vsuns (ncol, true) != get_num_vmoons (ncol, true)) {
 						clear_hatching ((i + 0) * 6 + ncol, false);
 						clear_hatching ((i + 1) * 6 + ncol, false);
 					}
@@ -970,7 +1036,7 @@ new_paths:
 						break;
 					for (int t = 0; t < 6; t++)
 						standard_solution[i + 2][t].shape = (shape_t) (*iter)[t];
-					if (!(err = is_valid (&row, &col, &nsuns, &nmoons)))
+					if (!(err = is_valid (&row, &col, &nsuns, &nmoons, true)))
 						return;
 				}
 				vec_iter++;
